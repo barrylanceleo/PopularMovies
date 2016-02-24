@@ -3,8 +3,7 @@
     android:id="@+id/movie_poster_grid_container"
     android:layout_width="@dimen/grid_poster_width"
     android:layout_height="@dimen/grid_poster_height"
-    android:paddingTop="2.5dp"
-    android:paddingBottom="2.5dp"
+    android:padding="@dimen/grid_poster_padding"
     android:elevation="@dimen/design_appbar_elevation">
 
     <ProgressBar

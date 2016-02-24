@@ -5,7 +5,5 @@
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="grid_poster_width">200dp</dimen>
     <dimen name="grid_poster_height">300dp</dimen>
-
-
-    190
+    <dimen name="grid_poster_padding">5dp</dimen>
 </resources>
