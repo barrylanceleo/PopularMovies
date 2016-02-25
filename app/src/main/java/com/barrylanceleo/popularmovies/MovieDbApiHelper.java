@@ -100,11 +100,11 @@ public class MovieDbApiHelper {
         return movies;
     }
 
-    List<Movie> getMovies(String sortBy, String pageNumber) throws NoInternetException {
+    List<Movie> getMovies(String sortBy, String pageNumber) throws UnableToFetchData {
         return getMovies(sortBy, pageNumber, null);
     }
 
-    List<Movie> getMovies(String sortBy, String pageNumber, Bundle extraParameters) throws NoInternetException {
+    List<Movie> getMovies(String sortBy, String pageNumber, Bundle extraParameters) throws UnableToFetchData {
 
         // build the URL to query
         Uri.Builder uriBuilder = new Uri.Builder();
@@ -134,12 +134,12 @@ public class MovieDbApiHelper {
             moviesJson = (JSONObject) queryTask.get();
         } catch (CancellationException e) {
             Log.v(TAG, "Task Cancelled");
-            throw new NoInternetException("No internet", e);
+            throw new UnableToFetchData("No internet", e);
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
             Log.v(TAG, "Task Execution failed");
-            throw new NoInternetException("No internet", e);
+            throw new UnableToFetchData("No internet", e);
         }
         return parseJsonToMovies(moviesJson);
 

@@ -6,4 +6,7 @@
     <dimen name="grid_poster_width">200dp</dimen>
     <dimen name="grid_poster_height">300dp</dimen>
     <dimen name="grid_poster_padding">5dp</dimen>
+    <dimen name="detail_poster_padding">10dp</dimen>
+    <dimen name="backdrop_layout_height">230dp</dimen>
+
 </resources>

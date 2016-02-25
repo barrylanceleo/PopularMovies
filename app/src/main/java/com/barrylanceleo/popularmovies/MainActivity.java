@@ -45,11 +45,11 @@ public class MainActivity extends AppCompatActivity {
         try {
             mImageGridManager.addMovies(mImageGridManager.fetchMovies());
             noInternetLayout.setVisibility(View.INVISIBLE);
-        } catch (NoInternetException e) {
+        } catch (UnableToFetchData e) {
             if (mImageGridManager.getImageGridAdapter().getCount() == 0)
                 noInternetLayout.setVisibility(View.VISIBLE);
             Snackbar.make(findViewById(R.id.imagesGridView),
-                    "No Internet Connection",
+                    getString(R.string.fetch_data_fail_message_1_line),
                     Snackbar.LENGTH_LONG).setAction("Action", null).show();
         }
     }

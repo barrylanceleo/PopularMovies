@@ -72,7 +72,7 @@ public class ImageGridManager implements AbsListView.OnScrollListener, AdapterVi
     }
 
 
-    List<Movie> fetchMovies() throws NoInternetException {
+    List<Movie> fetchMovies() throws UnableToFetchData {
         List<Movie> movies;
         switch (sortOrder) {
             case "vote_average.desc":
@@ -118,12 +118,12 @@ public class ImageGridManager implements AbsListView.OnScrollListener, AdapterVi
         while (firstVisibleItem + visibleItemCount >= lastItem - threshold) {
             try {
                 addMovies(fetchMovies());
-            } catch (NoInternetException e) {
+            } catch (UnableToFetchData e) {
                 // if we reached the last item display a toast about lack of internet connection
                 if (firstVisibleItem + visibleItemCount == totalItemCount &&
                         imageGridAdapter.getCount() != 0) {
                     Snackbar.make(mContext.findViewById(R.id.imagesGridView),
-                            mContext.getString(R.string.no_internet_message_single),
+                            mContext.getString(R.string.fetch_data_fail_message_1_line),
                             Snackbar.LENGTH_LONG).setAction("Action", null).show();
                 }
                 return;

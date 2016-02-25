@@ -24,16 +24,15 @@
 
             <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
+                android:layout_height="@dimen/backdrop_layout_height"
                 android:layout_gravity="center_horizontal"
-                android:layout_weight=".7"
                 android:elevation="@dimen/design_fab_elevation">
 
                 <ProgressBar
                     android:id="@+id/backdrop_image_details_progress"
-                    style="?android:attr/progressBarStyleSmall"
+                    style="?android:attr/progressBarStyleLarge"
                     android:layout_width="wrap_content"
-                    android:layout_height="230dp"
+                    android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:visibility="gone"
                     android:layout_centerHorizontal="true"
@@ -79,24 +78,25 @@
                 android:text="Overview"
                 android:id="@+id/movie_overview_details"
                 android:layout_gravity="center_horizontal"
-                android:paddingTop="@dimen/activity_vertical_margin"
-                android:paddingLeft="@dimen/activity_vertical_margin"
-                android:paddingRight="@dimen/activity_vertical_margin"
+                android:padding="@dimen/activity_vertical_margin"
                 android:gravity="fill"
                 android:textSize="15sp" />
 
             <LinearLayout
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_gravity="center_horizontal"
-                android:layout_weight="1.5">
+                android:layout_height="@dimen/grid_poster_height"
+                android:layout_gravity="center_horizontal">
 
                 <RelativeLayout
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
+                    android:layout_weight="1"
                     android:layout_gravity="center_vertical"
-                    android:layout_weight="1">
+                    android:paddingLeft="@dimen/detail_poster_padding"
+                    android:paddingRight="@dimen/detail_poster_padding"
+                    android:paddingBottom="@dimen/detail_poster_padding"
+                    android:elevation="@dimen/design_appbar_elevation">
 
                     <ProgressBar
                         android:id="@+id/poster_details_progress"
@@ -106,7 +106,8 @@
                         android:layout_gravity="center"
                         android:visibility="gone"
                         android:layout_centerHorizontal="true"
-                        android:layout_centerVertical="true" />
+                        android:layout_centerVertical="true"
+                        android:background="@color/colorBackground" />
 
                     <ImageView
                         android:id="@+id/poster_details_image_view"
@@ -116,9 +117,7 @@
                         android:layout_centerHorizontal="true"
                         android:layout_centerVertical="true"
                         android:adjustViewBounds="true"
-                        android:scaleType="fitCenter"
-                        android:padding="@dimen/activity_vertical_margin"
-                        android:elevation="@dimen/design_fab_elevation" />
+                        android:scaleType="fitCenter" />
 
                 </RelativeLayout>
 
@@ -128,7 +127,8 @@
                     android:layout_height="match_parent"
                     android:layout_gravity="center_vertical"
                     android:layout_weight="1"
-                    android:padding="@dimen/activity_vertical_margin">
+                    android:paddingRight="@dimen/detail_poster_padding"
+                    android:paddingBottom="@dimen/detail_poster_padding">
 
                     <TextView
                         android:layout_width="match_parent"
@@ -138,14 +138,12 @@
                         android:layout_weight="1"
                         android:id="@+id/release_date_details"
                         android:textAlignment="gravity"
-                        android:gravity="center|bottom"
-                        android:background="@color/colorHighlightDetailsView" />
+                        android:gravity="center|bottom" />
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="0dp"
-                        android:layout_weight=".4"
-                        android:background="@color/colorHighlightDetailsView" />
+                        android:layout_weight=".4" />
 
                     <TextView
                         android:layout_width="match_parent"
@@ -155,8 +153,7 @@
                         android:layout_weight="1"
                         android:id="@+id/ratings_details"
                         android:textAlignment="gravity"
-                        android:gravity="center|top"
-                        android:background="@color/colorHighlightDetailsView" />
+                        android:gravity="center|top" />
                 </LinearLayout>
 
             </LinearLayout>
