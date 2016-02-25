@@ -8,6 +8,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
+import android.widget.LinearLayout;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -22,9 +25,33 @@ public class MainActivity extends AppCompatActivity {
         //create a grid manager which creates a grid view and implements its listeners and handles data
         mImageGridManager = new ImageGridManager(this, getString(R.string.initial_sort_order));
 
-        //load data
-        mImageGridManager.addMovies(mImageGridManager.fetchMovies());
+        // set-up refresh button
+        Button reTry = (Button) findViewById(R.id.retry);
+        reTry.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
 
+                // load data
+                loadMoviesFirstTime();
+            }
+        });
+
+        // load data
+        loadMoviesFirstTime();
+    }
+
+    public void loadMoviesFirstTime() {
+        LinearLayout noInternetLayout = (LinearLayout) findViewById(R.id.noInternetLayout);
+        try {
+            mImageGridManager.addMovies(mImageGridManager.fetchMovies());
+            noInternetLayout.setVisibility(View.INVISIBLE);
+        } catch (NoInternetException e) {
+            if (mImageGridManager.getImageGridAdapter().getCount() == 0)
+                noInternetLayout.setVisibility(View.VISIBLE);
+            Snackbar.make(findViewById(R.id.imagesGridView),
+                    "No Internet Connection",
+                    Snackbar.LENGTH_LONG).setAction("Action", null).show();
+        }
     }
 
     @Override
@@ -51,8 +78,10 @@ public class MainActivity extends AppCompatActivity {
                 //create and display a dialog to choose the sort order
                 AlertDialog.Builder chooseSortOrderBuilder = new AlertDialog.Builder(this);
                 CharSequence[] sortOrderChoices = new String[]{"Most Popular", "Most Highly Rated"};
+                int currentChoice = mImageGridManager.getSortOrder()
+                        .equalsIgnoreCase("popularity.desc") ? 0 : 1;
                 chooseSortOrderBuilder.setTitle("Select Sort Order");
-                chooseSortOrderBuilder.setSingleChoiceItems(sortOrderChoices, -1,
+                chooseSortOrderBuilder.setSingleChoiceItems(sortOrderChoices, currentChoice,
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
@@ -61,7 +90,7 @@ public class MainActivity extends AppCompatActivity {
                                     case 0:
                                         if (mImageGridManager.getSortOrder().equalsIgnoreCase("popularity.desc")) {
                                             Snackbar.make(findViewById(R.id.imagesGridView),
-                                                    "You are already seeing the most popular movies.",
+                                                    "You are already in the most-popular view.",
                                                     Snackbar.LENGTH_LONG).setAction("Action", null).show();
                                             return;
                                         }
@@ -72,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
                                         Log.v(TAG, "Selected order vote_average.desc");
                                         if (mImageGridManager.getSortOrder().equalsIgnoreCase("vote_average.desc")) {
                                             Snackbar.make(findViewById(R.id.imagesGridView),
-                                                    "You are already seeing the most highly rated movies.",
+                                                    "You are already in the highest-rated view.",
                                                     Snackbar.LENGTH_LONG).setAction("Action", null).show();
                                             return;
                                         }
@@ -80,7 +109,8 @@ public class MainActivity extends AppCompatActivity {
                                         break;
                                 }
                                 mImageGridManager.resetDataAndOptions(mImageGridManager.getSortOrder());
-                                mImageGridManager.addMovies(mImageGridManager.fetchMovies());
+                                //load data
+                                loadMoviesFirstTime();
                             }
                         });
                 chooseSortOrderBuilder.create();

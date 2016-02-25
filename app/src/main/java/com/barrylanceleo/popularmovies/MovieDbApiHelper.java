@@ -17,6 +17,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 
 public class MovieDbApiHelper {
@@ -99,11 +100,11 @@ public class MovieDbApiHelper {
         return movies;
     }
 
-    List<Movie> getMovies(String sortBy, String pageNumber) {
+    List<Movie> getMovies(String sortBy, String pageNumber) throws NoInternetException {
         return getMovies(sortBy, pageNumber, null);
     }
 
-    List<Movie> getMovies(String sortBy, String pageNumber, Bundle extraParameters) {
+    List<Movie> getMovies(String sortBy, String pageNumber, Bundle extraParameters) throws NoInternetException {
 
         // build the URL to query
         Uri.Builder uriBuilder = new Uri.Builder();
@@ -131,10 +132,15 @@ public class MovieDbApiHelper {
             Log.v(TAG, "Querying " + requestString);
             AsyncTask queryTask = new queryTask().execute(requestString);
             moviesJson = (JSONObject) queryTask.get();
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (CancellationException e) {
+            Log.v(TAG, "Task Cancelled");
+            throw new NoInternetException("No internet", e);
+        } catch (InterruptedException e) {
             e.printStackTrace();
+        } catch (ExecutionException e) {
+            Log.v(TAG, "Task Execution failed");
+            throw new NoInternetException("No internet", e);
         }
-
         return parseJsonToMovies(moviesJson);
 
     }
@@ -157,7 +163,10 @@ public class MovieDbApiHelper {
                 }
                 moviesJson = new JSONObject(sb.toString());
                 br.close();
-            } catch (IOException | JSONException e) {
+            } catch (IOException e) {
+                Log.v(TAG, "Exception: No internet?");
+                cancel(true);
+            } catch (JSONException e) {
                 e.printStackTrace();
             } finally {
                 assert urlConnection != null;

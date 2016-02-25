@@ -3,6 +3,7 @@ package com.barrylanceleo.popularmovies;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.AbsListView;
@@ -71,7 +72,7 @@ public class ImageGridManager implements AbsListView.OnScrollListener, AdapterVi
     }
 
 
-    List<Movie> fetchMovies() {
+    List<Movie> fetchMovies() throws NoInternetException {
         List<Movie> movies;
         switch (sortOrder) {
             case "vote_average.desc":
@@ -114,10 +115,20 @@ public class ImageGridManager implements AbsListView.OnScrollListener, AdapterVi
 //        Log.v(TAG, "No. of items in dataset: " + imageGridAdapter.getCount());
 
         //add new movies if required
-        if (firstVisibleItem + visibleItemCount >= lastItem - threshold) {
-            addMovies(fetchMovies());
+        while (firstVisibleItem + visibleItemCount >= lastItem - threshold) {
+            try {
+                addMovies(fetchMovies());
+            } catch (NoInternetException e) {
+                // if we reached the last item display a toast about lack of internet connection
+                if (firstVisibleItem + visibleItemCount == totalItemCount &&
+                        imageGridAdapter.getCount() != 0) {
+                    Snackbar.make(mContext.findViewById(R.id.imagesGridView),
+                            mContext.getString(R.string.no_internet_message_single),
+                            Snackbar.LENGTH_LONG).setAction("Action", null).show();
+                }
+                return;
+            }
         }
-
     }
 
 

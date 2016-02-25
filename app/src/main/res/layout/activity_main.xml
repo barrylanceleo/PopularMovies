@@ -15,5 +15,31 @@
         android:stretchMode="columnWidth"
         android:gravity="center" />
 
+    <LinearLayout
+        android:id="@+id/noInternetLayout"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:layout_centerInParent="true">
+
+        <TextView
+            android:id="@+id/noInternetTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:layout_centerInParent="true"
+            android:text="@string/no_internet_message" />
+
+        <Button
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="Retry"
+            android:id="@+id/retry"
+            android:layout_gravity="center" />
+    </LinearLayout>
+
 </RelativeLayout>
 
