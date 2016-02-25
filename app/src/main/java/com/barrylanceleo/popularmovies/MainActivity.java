@@ -1,11 +1,13 @@
 package com.barrylanceleo.popularmovies;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.GridView;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -17,16 +19,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // set up the grid view to display
-        GridView imagesGridView = (GridView) findViewById(R.id.imagesGridView);
-        ImageGridAdapter imageGridAdapter = new ImageGridAdapter(this);
-        imagesGridView.setAdapter(imageGridAdapter);
-
-        //create a grid manager which implements its listeners and handles data
-        mImageGridManager = new ImageGridManager(this, imageGridAdapter,
-                getString(R.string.initial_sort_order));
-        imagesGridView.setOnItemClickListener(mImageGridManager);
-        imagesGridView.setOnScrollListener(mImageGridManager);
+        //create a grid manager which creates a grid view and implements its listeners and handles data
+        mImageGridManager = new ImageGridManager(this, getString(R.string.initial_sort_order));
 
         //load data
         mImageGridManager.addMovies(mImageGridManager.fetchMovies());
@@ -54,24 +48,43 @@ public class MainActivity extends AppCompatActivity {
 
             case R.id.action_sort_order:
 
-                String newSortOrder = mImageGridManager.getSortOrder().equalsIgnoreCase("popularity.desc") ?
-                        "vote_average.desc" : "popularity.desc";
-                mImageGridManager.resetDataAndOptions(newSortOrder);
-                mImageGridManager.addMovies(mImageGridManager.fetchMovies());
-
-                switch (mImageGridManager.getSortOrder()) {
-                    case "popularity.desc":
-                        Snackbar.make(findViewById(R.id.imagesGridView), "These are the most popular movies.", Snackbar.LENGTH_LONG)
-                                .setAction("Action", null).show();
-                        break;
-                    case "vote_average.desc":
-                        Snackbar.make(findViewById(R.id.imagesGridView), "These are the most highly rated movies.", Snackbar.LENGTH_LONG)
-                                .setAction("Action", null).show();
-                        break;
-                    default:
-                        Snackbar.make(findViewById(R.id.imagesGridView), "UnHandled sortOrder.", Snackbar.LENGTH_LONG)
-                                .setAction("Action", null).show();
-                }
+                //create and display a dialog to choose the sort order
+                AlertDialog.Builder chooseSortOrderBuilder = new AlertDialog.Builder(this);
+                CharSequence[] sortOrderChoices = new String[]{"Most Popular", "Most Highly Rated"};
+                chooseSortOrderBuilder.setTitle("Select Sort Order");
+                chooseSortOrderBuilder.setSingleChoiceItems(sortOrderChoices, -1,
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                                switch (which) {
+                                    case 0:
+                                        if (mImageGridManager.getSortOrder().equalsIgnoreCase("popularity.desc")) {
+                                            Snackbar.make(findViewById(R.id.imagesGridView),
+                                                    "You are already seeing the most popular movies.",
+                                                    Snackbar.LENGTH_LONG).setAction("Action", null).show();
+                                            return;
+                                        }
+                                        Log.v(TAG, "Selected order popularity.desc");
+                                        mImageGridManager.setSortOrder("popularity.desc");
+                                        break;
+                                    case 1:
+                                        Log.v(TAG, "Selected order vote_average.desc");
+                                        if (mImageGridManager.getSortOrder().equalsIgnoreCase("vote_average.desc")) {
+                                            Snackbar.make(findViewById(R.id.imagesGridView),
+                                                    "You are already seeing the most highly rated movies.",
+                                                    Snackbar.LENGTH_LONG).setAction("Action", null).show();
+                                            return;
+                                        }
+                                        mImageGridManager.setSortOrder("vote_average.desc");
+                                        break;
+                                }
+                                mImageGridManager.resetDataAndOptions(mImageGridManager.getSortOrder());
+                                mImageGridManager.addMovies(mImageGridManager.fetchMovies());
+                            }
+                        });
+                chooseSortOrderBuilder.create();
+                chooseSortOrderBuilder.show();
                 break;
 
             default:

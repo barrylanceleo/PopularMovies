@@ -19,17 +19,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-/**
- * Created by barry on 2/22/16.
- */
-public class TheMovieDbApiHelper {
+public class MovieDbApiHelper {
 
-    static final String TAG = TheMovieDbApiHelper.class.getSimpleName();
-
+    static final String TAG = MovieDbApiHelper.class.getSimpleName();
     Context mContext;
     String apiKey;
 
-    public TheMovieDbApiHelper(Context mContext) {
+    public MovieDbApiHelper(Context mContext) {
         this.mContext = mContext;
         apiKey = mContext.getString(R.string.api_key);
     }
@@ -59,7 +55,6 @@ public class TheMovieDbApiHelper {
                         .appendPath("w342")
                         .appendPath(posterPath.substring(1, posterPath.length()));
                 aMovie.setPosterUrl(uriBuilder.build().toString());
-                Log.v(TAG, "Poster Url: " + aMovie.getPosterUrl());
 
                 // process the backdrop url
                 aMovie.setBackdropPath(result.getString("backdrop_path"));
@@ -72,7 +67,6 @@ public class TheMovieDbApiHelper {
                         .appendPath("w780")
                         .appendPath(backdropPath.substring(1, backdropPath.length()));
                 aMovie.setBackdropUrl(uriBuilder.build().toString());
-                Log.v(TAG, "Backdrop Url: " + aMovie.getBackdropUrl());
 
                 // other details
                 aMovie.setAdult(result.getBoolean("adult"));
@@ -83,7 +77,6 @@ public class TheMovieDbApiHelper {
                 aMovie.setLanguage(result.getString("original_language"));
                 aMovie.setPopularity(result.getDouble("popularity"));
                 aMovie.setVote_count(result.getInt("vote_count"));
-                Log.v(TAG, "Vote Count: " + aMovie.getVote_count());
                 aMovie.setVideo(result.getBoolean("video"));
                 aMovie.setVote_average(result.getDouble("vote_average"));
 
@@ -101,11 +94,6 @@ public class TheMovieDbApiHelper {
         } catch (JSONException e) {
             Log.e(TAG, "unable to find required tags in JSON response");
             e.printStackTrace();
-        }
-
-        for (Movie m : movies) {
-            Log.v(TAG, m.getTitle());
-            Log.v(TAG, m.getPosterPath());
         }
 
         return movies;
@@ -136,16 +124,13 @@ public class TheMovieDbApiHelper {
         }
 
         String requestString = uriBuilder.build().toString();
-        Log.v(TAG, "Movie query URL: " + requestString);
 
         //query the URL
         JSONObject moviesJson = null;
         try {
-            Log.v(TAG, "Starting background URL query.");
+            Log.v(TAG, "Querying " + requestString);
             AsyncTask queryTask = new queryTask().execute(requestString);
-            Log.v(TAG, "Back from background URL query.");
             moviesJson = (JSONObject) queryTask.get();
-            Log.v(TAG, "got the response from background URL query.");
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
         }

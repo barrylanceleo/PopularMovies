@@ -1,18 +1,16 @@
 package com.barrylanceleo.popularmovies;
 
-import android.content.Context;
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
+import android.widget.GridView;
 
 import java.util.List;
 
-/**
- * Created by barry on 2/23/16.
- */
 public class ImageGridManager implements AbsListView.OnScrollListener, AdapterView.OnItemClickListener {
 
     private static final String TAG = ImageGridManager.class.getSimpleName();
@@ -20,9 +18,10 @@ public class ImageGridManager implements AbsListView.OnScrollListener, AdapterVi
     private int lastItem;
     private int pageToFetch;
     private ImageGridAdapter imageGridAdapter;
-    private TheMovieDbApiHelper movieDbHelper;
+    private GridView imagesGridView;
+    private MovieDbApiHelper movieDbHelper;
     private String sortOrder;
-    private Context mContext;
+    private Activity mContext;
 
     public String getSortOrder() {
         return sortOrder;
@@ -40,18 +39,32 @@ public class ImageGridManager implements AbsListView.OnScrollListener, AdapterVi
         this.imageGridAdapter = imageGridAdapter;
     }
 
-    ImageGridManager(Context mContext, ImageGridAdapter imageGridAdapter, String sortOrder) {
+    ImageGridManager(Activity mContext, String sortOrder) {
         this.mContext = mContext;
-        this.imageGridAdapter = imageGridAdapter;
         this.sortOrder = sortOrder;
-        this.movieDbHelper = new TheMovieDbApiHelper(mContext);
+        movieDbHelper = new MovieDbApiHelper(mContext);
         lastItem = 0;
         threshold = 10;
         pageToFetch = 1;
+        initGridView();
+    }
+
+
+    // create view and set up its listeners and adapter
+    void initGridView() {
+        imagesGridView = (GridView) mContext.findViewById(R.id.imagesGridView);
+        imageGridAdapter = new ImageGridAdapter(mContext);
+        imagesGridView.setAdapter(imageGridAdapter);
+        imagesGridView.setOnItemClickListener(this);
+        imagesGridView.setOnScrollListener(this);
     }
 
     void resetDataAndOptions(String sortOrder) {
+        imagesGridView = (GridView) mContext.findViewById(R.id.imagesGridView);
         imageGridAdapter.clear();
+        imagesGridView.setAdapter(imageGridAdapter);
+        imagesGridView.setOnItemClickListener(this);
+        imagesGridView.setOnScrollListener(this);
         this.sortOrder = sortOrder;
         lastItem = 0;
         pageToFetch = 1;

@@ -1,7 +1,6 @@
 package com.barrylanceleo.popularmovies;
 
 import android.app.Activity;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,9 +13,6 @@ import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
-/**
- * Created by barry on 2/22/16.
- */
 public class ImageGridAdapter extends ArrayAdapter<Movie> {
 
     static final String TAG = ImageGridAdapter.class.getSimpleName();
@@ -61,9 +57,6 @@ public class ImageGridAdapter extends ArrayAdapter<Movie> {
         ImageView posterView = (ImageView) convertView.findViewById(R.id.movie_poster_grid_item);
 
         Movie movie = getItem(position);
-
-        Log.v(TAG, position + ". Movie Name: " + movie.getTitle());
-
         mPicasso.load(movie.getPosterUrl())
                 .into(posterView, new ImageLoadedCallback(mProgressBar));
 
