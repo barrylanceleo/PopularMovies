@@ -13,12 +13,12 @@ import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
-public class ImageGridAdapter extends ArrayAdapter<Movie> {
+public class MovieGridAdapter extends ArrayAdapter<Movie> {
 
-    static final String TAG = ImageGridAdapter.class.getSimpleName();
+    static final String TAG = MovieGridAdapter.class.getSimpleName();
     Picasso mPicasso;
 
-    public ImageGridAdapter(Activity context) {
+    public MovieGridAdapter(Activity context) {
         super(context, 0, new ArrayList<Movie>());
         mPicasso = Picasso.with(context);
         //mPicasso.setIndicatorsEnabled(true);

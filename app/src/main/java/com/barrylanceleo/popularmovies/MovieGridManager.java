@@ -1,7 +1,7 @@
 package com.barrylanceleo.popularmovies;
 
 import android.app.Activity;
-import android.content.Intent;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.util.Log;
@@ -12,37 +12,38 @@ import android.widget.GridView;
 
 import java.util.List;
 
-public class ImageGridManager implements AbsListView.OnScrollListener, AdapterView.OnItemClickListener {
+public class MovieGridManager implements AbsListView.OnScrollListener, AdapterView.OnItemClickListener {
 
-    private static final String TAG = ImageGridManager.class.getSimpleName();
+    private static final String TAG = MovieGridManager.class.getSimpleName();
     private int threshold;
     private int lastItem;
     private int pageToFetch;
-    private ImageGridAdapter imageGridAdapter;
+    private String sortOrder;
+    private MovieGridAdapter movieGridAdapter;
     private GridView imagesGridView;
     private MovieDbApiHelper movieDbHelper;
-    private String sortOrder;
-    private Activity mContext;
+    private Context mContext;
 
     public String getSortOrder() {
         return sortOrder;
     }
 
     public void setSortOrder(String sortOrder) {
+        Utility.setPreferredSortOrder(mContext, sortOrder);
         this.sortOrder = sortOrder;
     }
 
-    public ImageGridAdapter getImageGridAdapter() {
-        return imageGridAdapter;
+    public MovieGridAdapter getMovieGridAdapter() {
+        return movieGridAdapter;
     }
 
-    public void setImageGridAdapter(ImageGridAdapter imageGridAdapter) {
-        this.imageGridAdapter = imageGridAdapter;
+    public void setMovieGridAdapter(MovieGridAdapter movieGridAdapter) {
+        this.movieGridAdapter = movieGridAdapter;
     }
 
-    ImageGridManager(Activity mContext, String sortOrder) {
+    MovieGridManager(Context mContext) {
         this.mContext = mContext;
-        this.sortOrder = sortOrder;
+        this.sortOrder = Utility.getPreferredSortOrder(mContext);
         movieDbHelper = new MovieDbApiHelper(mContext);
         lastItem = 0;
         threshold = 10;
@@ -53,20 +54,19 @@ public class ImageGridManager implements AbsListView.OnScrollListener, AdapterVi
 
     // create view and set up its listeners and adapter
     void initGridView() {
-        imagesGridView = (GridView) mContext.findViewById(R.id.imagesGridView);
-        imageGridAdapter = new ImageGridAdapter(mContext);
-        imagesGridView.setAdapter(imageGridAdapter);
+        imagesGridView = (GridView) ((Activity)mContext).findViewById(R.id.imagesGridView);
+        movieGridAdapter = new MovieGridAdapter((Activity)mContext);
+        imagesGridView.setAdapter(movieGridAdapter);
         imagesGridView.setOnItemClickListener(this);
         imagesGridView.setOnScrollListener(this);
     }
 
-    void resetDataAndOptions(String sortOrder) {
-        imagesGridView = (GridView) mContext.findViewById(R.id.imagesGridView);
-        imageGridAdapter.clear();
-        imagesGridView.setAdapter(imageGridAdapter);
+    void resetDataAndOptions() {
+        imagesGridView = (GridView) ((Activity)mContext).findViewById(R.id.imagesGridView);
+        movieGridAdapter.clear();
+        imagesGridView.setAdapter(movieGridAdapter);
         imagesGridView.setOnItemClickListener(this);
         imagesGridView.setOnScrollListener(this);
-        this.sortOrder = sortOrder;
         lastItem = 0;
         pageToFetch = 1;
     }
@@ -91,7 +91,7 @@ public class ImageGridManager implements AbsListView.OnScrollListener, AdapterVi
         Log.v(TAG, "Added page " + pageToFetch + " of movies to the list.");
         pageToFetch++;
         lastItem += movies.size();
-        imageGridAdapter.addAll(movies);
+        movieGridAdapter.addAll(movies);
     }
 
     @Override
@@ -111,8 +111,8 @@ public class ImageGridManager implements AbsListView.OnScrollListener, AdapterVi
      */
     @Override
     public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-//        Log.v(TAG, "First Visible Item: " + firstVisibleItem + " Last Visible Item: " + lastItem);
-//        Log.v(TAG, "No. of items in dataset: " + imageGridAdapter.getCount());
+//        Log.v(LOG_TAG, "First Visible Item: " + firstVisibleItem + " Last Visible Item: " + lastItem);
+//        Log.v(LOG_TAG, "No. of items in dataset: " + movieGridAdapter.getCount());
 
         //add new movies if required
         while (firstVisibleItem + visibleItemCount >= lastItem - threshold) {
@@ -121,8 +121,8 @@ public class ImageGridManager implements AbsListView.OnScrollListener, AdapterVi
             } catch (UnableToFetchData e) {
                 // if we reached the last item display a toast about lack of internet connection
                 if (firstVisibleItem + visibleItemCount == totalItemCount &&
-                        imageGridAdapter.getCount() != 0) {
-                    Snackbar.make(mContext.findViewById(R.id.imagesGridView),
+                        movieGridAdapter.getCount() != 0) {
+                    Snackbar.make(((Activity)mContext).findViewById(R.id.imagesGridView),
                             mContext.getString(R.string.fetch_data_fail_message_1_line),
                             Snackbar.LENGTH_LONG).setAction("Action", null).show();
                 }
@@ -148,7 +148,7 @@ public class ImageGridManager implements AbsListView.OnScrollListener, AdapterVi
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-        Movie aMovie = imageGridAdapter.getItem(position);
+        Movie aMovie = movieGridAdapter.getItem(position);
 
         // make a movie details bundle
         Bundle movieDetailsBundle = new Bundle();
@@ -159,9 +159,7 @@ public class ImageGridManager implements AbsListView.OnScrollListener, AdapterVi
         movieDetailsBundle.putDouble("vote_average", aMovie.getVote_average());
         movieDetailsBundle.putString("release_date", aMovie.getRelease_date());
 
-        // add the bundle to the intent and start the details activity
-        Intent openDetailsIntent = new Intent(mContext, MovieDetails.class);
-        openDetailsIntent.putExtras(movieDetailsBundle);
-        mContext.startActivity(openDetailsIntent);
+        // call the onItemSelected of the containing activity
+        ((MovieGridFragment.Callback) mContext).onItemSelected(movieDetailsBundle);
     }
 }
