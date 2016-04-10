@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -16,7 +17,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.LinearLayout;
 
 
@@ -31,6 +31,7 @@ public class MovieGridFragment extends Fragment {
     MovieGridManager mMovieGridManager;
     Context mContext;
     View mRootView;
+    SwipeRefreshLayout mSwipeRefreshLayout;
 
     /**
      * A callback interface that all activities containing this fragment must
@@ -41,7 +42,7 @@ public class MovieGridFragment extends Fragment {
         /**
          * DetailFragmentCallback for when an item has been selected.
          */
-        public void onItemSelected(Bundle movieDetails);
+        void onItemSelected(Bundle movieDetails);
     }
 
     public MovieGridFragment() {
@@ -80,14 +81,14 @@ public class MovieGridFragment extends Fragment {
         // Inflate the layout for this fragment
         mRootView = inflater.inflate(R.layout.fragment_movie_grid, container, false);
 
-        // set-up refresh button
-        Button reTry = (Button) mRootView.findViewById(R.id.retry);
-        reTry.setOnClickListener(new View.OnClickListener() {
+        // setup the swipe refresh action
+        mSwipeRefreshLayout = (SwipeRefreshLayout) mRootView.findViewById(R.id.MovieGridSwipeRefresh);
+        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener(){
             @Override
-            public void onClick(View v) {
-
+            public void onRefresh() {
                 // load data
                 loadMoviesFirstTime();
+                mSwipeRefreshLayout.setRefreshing(false);
             }
         });
 
