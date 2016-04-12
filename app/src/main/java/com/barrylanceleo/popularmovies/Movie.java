@@ -7,25 +7,21 @@ import java.util.List;
  */
 public class Movie {
 
+    private int id;
+    private String title;
     private String posterPath;
-
-    public String getPosterUrl() {
-        return posterUrl;
-    }
-
-    public void setPosterUrl(String posterUrl) {
-        this.posterUrl = posterUrl;
-    }
-
     private String posterUrl;
     private boolean adult;
     private String overview;
     private String release_date;
     private List<Integer> genreIds;
-    private int id;
-    private String title;
     private String language;
     private String backdropPath;
+    private String backdropUrl;
+    private double popularity;
+    private boolean video;
+    private int vote_count;
+    private double vote_average;
 
     public String getBackdropUrl() {
         return backdropUrl;
@@ -35,11 +31,14 @@ public class Movie {
         this.backdropUrl = backdropUrl;
     }
 
-    private String backdropUrl;
-    private double popularity;
-    private boolean video;
-    private int vote_count;
-    private double vote_average;
+
+    public String getPosterUrl() {
+        return posterUrl;
+    }
+
+    public void setPosterUrl(String posterUrl) {
+        this.posterUrl = posterUrl;
+    }
 
     public String getPosterPath() {
         return posterPath;

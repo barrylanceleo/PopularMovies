@@ -17,6 +17,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.LinearLayout;
 
 
@@ -32,6 +33,7 @@ public class MovieGridFragment extends Fragment {
     Context mContext;
     View mRootView;
     SwipeRefreshLayout mSwipeRefreshLayout;
+    Button mRefreshButton;
 
     /**
      * A callback interface that all activities containing this fragment must
@@ -89,6 +91,21 @@ public class MovieGridFragment extends Fragment {
                 // load data
                 loadMoviesFirstTime();
                 mSwipeRefreshLayout.setRefreshing(false);
+            }
+        });
+
+        // set the refresh button
+        mRefreshButton = (Button) mRootView.findViewById(R.id.refreshButton);
+        mRefreshButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                // Signal SwipeRefreshLayout to start the progress indicator
+                mSwipeRefreshLayout.setRefreshing(true);
+                // load data
+                loadMoviesFirstTime();
+                mSwipeRefreshLayout.setRefreshing(false);
+                mRefreshButton.setVisibility(View.INVISIBLE);
             }
         });
 

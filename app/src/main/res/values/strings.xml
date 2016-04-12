@@ -17,4 +17,7 @@
     <string name="pref_sortOrder_key">Sort Order</string>
     <string name="pref_sortOrder_default">popularity.desc</string>
 
+    <!--Refresh FAB-->
+    <string name="refresh_fab">Tap to refresh</string>
+
 </resources>
