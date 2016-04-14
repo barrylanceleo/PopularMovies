@@ -10,12 +10,12 @@ import android.provider.BaseColumns;
  */
 public class MovieContract {
 
-    public static final String CONTENT_AUTHORITY = "com.barrylanceleo.popularmovies.app";
+    public static final String CONTENT_AUTHORITY = "com.barrylanceleo.popularmovies.data";
     public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
 
     // path to access corresponding data
     public static final String PATH_POPULAR = "popular";
-    public static final String PATH_RECENT = "recent";
+    public static final String PATH_RATING = "rating";
     public static final String PATH_FAVORITE = "favorite";
     public static final String PATH_DETAILS = "details";
 
@@ -38,14 +38,14 @@ public class MovieContract {
     }
 
     // defines the recent movies table
-    public static final class RecentMovieEntry implements BaseColumns{
+    public static final class RatingMovieEntry implements BaseColumns{
         public static final Uri CONTENT_URI =
-                BASE_CONTENT_URI.buildUpon().appendPath(PATH_POPULAR).build();
+                BASE_CONTENT_URI.buildUpon().appendPath(PATH_RATING).build();
 
         public static final String CONTENT_TYPE =
-                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_RECENT;
+                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_RATING;
         public static final String CONTENT_ITEM_TYPE =
-                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_RECENT;
+                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_RATING;
 
         // Table name
         public static final String TABLE_NAME = "recent";
@@ -58,7 +58,7 @@ public class MovieContract {
     // defines the favorite movies table
     public static final class FavoriteMovieEntry implements BaseColumns{
         public static final Uri CONTENT_URI =
-                BASE_CONTENT_URI.buildUpon().appendPath(PATH_POPULAR).build();
+                BASE_CONTENT_URI.buildUpon().appendPath(PATH_FAVORITE).build();
 
         public static final String CONTENT_TYPE =
                 ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_FAVORITE;
@@ -76,7 +76,7 @@ public class MovieContract {
     // defines the movie details table
     public static final class MovieDetailsEntry implements BaseColumns{
         public static final Uri CONTENT_URI =
-                BASE_CONTENT_URI.buildUpon().appendPath(PATH_POPULAR).build();
+                BASE_CONTENT_URI.buildUpon().appendPath(PATH_DETAILS).build();
 
         public static final String CONTENT_TYPE =
                 ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_DETAILS;

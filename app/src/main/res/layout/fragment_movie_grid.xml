@@ -23,18 +23,6 @@
 
     </android.support.v4.widget.SwipeRefreshLayout>
 
-    <Button
-        android:id="@+id/refreshButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:layout_gravity="bottom|right"
-        android:layout_marginRight="@dimen/activity_horizontal_margin"
-        android:layout_marginBottom="@dimen/activity_vertical_margin"
-        android:text="@string/refresh_fab"
-        android:backgroundTint="@color/colorBackground"
-        android:allowUndo="false" />
-
     <LinearLayout
         android:id="@+id/noInternetLayout"
         android:orientation="vertical"
@@ -48,7 +36,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="@string/fetch_data_fail_message" />
+            android:text="@string/refresh_direction" />
 
     </LinearLayout>
 </FrameLayout>

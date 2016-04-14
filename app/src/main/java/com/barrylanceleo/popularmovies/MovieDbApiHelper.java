@@ -1,10 +1,13 @@
 package com.barrylanceleo.popularmovies;
 
-import android.content.Context;
+import android.database.Cursor;
+import android.database.MatrixCursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+
+import com.barrylanceleo.popularmovies.data.MovieContract;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -15,39 +18,56 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 
-public class MovieDbApiHelper {
+public final class MovieDbApiHelper {
 
-    static final String TAG = MovieDbApiHelper.class.getSimpleName();
-    Context mContext;
-    String apiKey;
+    public static final String TAG = MovieDbApiHelper.class.getSimpleName();
+    public static final int movieCountPerPage = 20;
+    public final String mApiKey;
 
-    public MovieDbApiHelper(Context mContext) {
-        this.mContext = mContext;
-        apiKey = mContext.getString(R.string.api_key);
+
+    public MovieDbApiHelper(String apiKey){
+        mApiKey = apiKey;
     }
 
-    List<Movie> parseJsonToMovies(JSONObject moviesJson) {
-        //create a array list to hold all the movies
-        List<Movie> movies = new ArrayList<>();
+    Cursor parseJsonToCursor(JSONObject moviesJson, int startId) {
+        //create a containing all movies
+        MatrixCursor moviesCursor = new MatrixCursor(new String[]{
+                    "_id",
+                    MovieContract.MovieDetailsEntry.COLUMN_MOVIE_ID,
+                    MovieContract.MovieDetailsEntry.COLUMN_TITLE,
+                    MovieContract.MovieDetailsEntry.COLUMN_POSTER_PATH,
+                    MovieContract.MovieDetailsEntry.COLUMN_POSTER_URL,
+                    MovieContract.MovieDetailsEntry.COLUMN_ADULT,
+                    MovieContract.MovieDetailsEntry.COLUMN_OVERVIEW,
+                    MovieContract.MovieDetailsEntry.COLUMN_RELEASE_DATE,
+                    MovieContract.MovieDetailsEntry.COLUMN_GENRE_IDS,
+                    MovieContract.MovieDetailsEntry.COLUMN_LANGUAGE,
+                    MovieContract.MovieDetailsEntry.COLUMN_BACKDROP_PATH,
+                    MovieContract.MovieDetailsEntry.COLUMN_BACKDROP_URL,
+                    MovieContract.MovieDetailsEntry.COLUMN_POPULARITY,
+                    MovieContract.MovieDetailsEntry.COLUMN_VOTE_COUNT,
+                    MovieContract.MovieDetailsEntry.COLUMN_VOTE_AVERAGE }, 10);
 
         try {
             JSONArray resultsArray = moviesJson.getJSONArray("results");
             Log.v(TAG, "Got " + resultsArray.length() + " movies from page " + moviesJson.getInt("page"));
 
             for (int i = 0; i < resultsArray.length(); i++) {
-                // create a new movie object for each result
-                Movie aMovie = new Movie();
 
                 JSONObject result = resultsArray.getJSONObject(i);
+                MatrixCursor.RowBuilder movieRow = moviesCursor.newRow();
 
-                // process the poster url
-                aMovie.setPosterPath(result.getString("poster_path"));
-                String posterPath = aMovie.getPosterPath();
+                // this order depends on the column order defined above
+                movieRow.add(startId++);
+                movieRow.add(result.getInt("id"));
+                movieRow.add(result.getString("title"));
+
+                String posterPath = result.getString("poster_path");
+                movieRow.add(posterPath);
+                // add the poster URL
                 Uri.Builder uriBuilder = new Uri.Builder();
                 uriBuilder.scheme("http")
                         .authority("image.tmdb.org")
@@ -55,11 +75,16 @@ public class MovieDbApiHelper {
                         .appendPath("p")
                         .appendPath("w342")
                         .appendPath(posterPath.substring(1, posterPath.length()));
-                aMovie.setPosterUrl(uriBuilder.build().toString());
+                movieRow.add(uriBuilder.build().toString());
+                movieRow.add((result.getBoolean("adult") == true) ? 1 : 0);
+                movieRow.add(result.getString("overview"));
+                movieRow.add(result.getString("release_date"));
+                movieRow.add(result.getJSONArray("genre_ids"));
+                movieRow.add(result.getString("original_language"));
 
-                // process the backdrop url
-                aMovie.setBackdropPath(result.getString("backdrop_path"));
-                String backdropPath = aMovie.getBackdropPath();
+                String backdropPath = result.getString("backdrop_path");
+                movieRow.add(backdropPath);
+                // add the backdrop URL
                 uriBuilder = new Uri.Builder();
                 uriBuilder.scheme("http")
                         .authority("image.tmdb.org")
@@ -67,44 +92,23 @@ public class MovieDbApiHelper {
                         .appendPath("p")
                         .appendPath("w780")
                         .appendPath(backdropPath.substring(1, backdropPath.length()));
-                aMovie.setBackdropUrl(uriBuilder.build().toString());
+                movieRow.add(uriBuilder.build().toString());
 
-                // other details
-                aMovie.setAdult(result.getBoolean("adult"));
-                aMovie.setOverview(result.getString("overview"));
-                aMovie.setRelease_date(result.getString("release_date"));
-                aMovie.setId(result.getInt("id"));
-                aMovie.setTitle(result.getString("title"));
-                aMovie.setLanguage(result.getString("original_language"));
-                aMovie.setPopularity(result.getDouble("popularity"));
-                aMovie.setVote_count(result.getInt("vote_count"));
-                aMovie.setVideo(result.getBoolean("video"));
-                aMovie.setVote_average(result.getDouble("vote_average"));
-
-                // get the genre ids
-                JSONArray genreArray = result.getJSONArray("genre_ids");
-                ArrayList<Integer> genres = new ArrayList<>();
-                for (int j = 0; j < genreArray.length(); j++)
-                    genres.add(genreArray.getInt(j));
-                aMovie.setGenreIds(genres);
-
-                // add to the list
-                movies.add(aMovie);
+                movieRow.add(result.getDouble("popularity"));
+                movieRow.add(result.getInt("vote_count"));
+                movieRow.add(result.getDouble("vote_average"));
             }
-
         } catch (JSONException e) {
             Log.e(TAG, "unable to find required tags in JSON response");
             e.printStackTrace();
         }
 
-        return movies;
+        Log.v(TAG, "In MovieDbHelper.parseJsonToCursor().\nCount: " + moviesCursor.getCount());
+
+        return moviesCursor;
     }
 
-    List<Movie> getMovies(String sortBy, String pageNumber) throws UnableToFetchData {
-        return getMovies(sortBy, pageNumber, null);
-    }
-
-    List<Movie> getMovies(String sortBy, String pageNumber, Bundle extraParameters) throws UnableToFetchData {
+    Cursor getMovies(String sortBy, String pageNumber, int startId, Bundle extraParameters) throws UnableToFetchData {
 
         // build the URL to query
         Uri.Builder uriBuilder = new Uri.Builder();
@@ -115,7 +119,7 @@ public class MovieDbApiHelper {
                 .appendPath("movie")
                 .appendQueryParameter("sort_by", sortBy)
                 .appendQueryParameter("page", pageNumber)
-                .appendQueryParameter("api_key", this.apiKey);
+                .appendQueryParameter("api_key", this.mApiKey);
         // .fragment("section-name"); // to add #section-name to the url
 
         if (extraParameters != null && !extraParameters.isEmpty()) {
@@ -141,7 +145,7 @@ public class MovieDbApiHelper {
             Log.v(TAG, "Task Execution failed");
             throw new UnableToFetchData("No internet", e);
         }
-        return parseJsonToMovies(moviesJson);
+        return parseJsonToCursor(moviesJson, startId);
 
     }
 
@@ -172,7 +176,6 @@ public class MovieDbApiHelper {
                 assert urlConnection != null;
                 urlConnection.disconnect();
             }
-
             return moviesJson;
         }
     }

@@ -7,6 +7,8 @@
     <string name="fetch_data_fail_message">Unable to fetch data.\nPlease check your internet connection.
         \nSwipe down to refresh.</string>
     <string name="fetch_data_fail_message_1_line">Unable to fetch data. Please check your Internet.</string>
+    <string name="no_internet">No Internet Connection.</string>
+    <string name="refresh_direction">Pull Down to Refresh.</string>
 
     <!--Menu options-->
     <string name="action_refresh">Refresh</string>

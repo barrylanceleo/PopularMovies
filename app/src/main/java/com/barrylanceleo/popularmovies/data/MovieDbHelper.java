@@ -7,12 +7,12 @@ import android.database.sqlite.SQLiteOpenHelper;
 import com.barrylanceleo.popularmovies.data.MovieContract.FavoriteMovieEntry;
 import com.barrylanceleo.popularmovies.data.MovieContract.MovieDetailsEntry;
 import com.barrylanceleo.popularmovies.data.MovieContract.PopularMovieEntry;
-import com.barrylanceleo.popularmovies.data.MovieContract.RecentMovieEntry;
+import com.barrylanceleo.popularmovies.data.MovieContract.RatingMovieEntry;
 
 public class MovieDbHelper extends SQLiteOpenHelper {
 
     // If you change the database schema, you must increment the database version.
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
 
     static final String DATABASE_NAME = "movie.db";
 
@@ -31,7 +31,6 @@ public class MovieDbHelper extends SQLiteOpenHelper {
         // Create tables to hold the popular, recent and favorite movies list and another table to hold the movie details
 
         final String SQL_CREATE_MOVIE_DETAILS_TABLE = "CREATE TABLE " + MovieDetailsEntry.TABLE_NAME + " (" +
-                MovieDetailsEntry._ID + " INTEGER UNIQUE," +
                 MovieDetailsEntry.COLUMN_MOVIE_ID + " INTEGER PRIMARY KEY, " +
                 MovieDetailsEntry.COLUMN_TITLE + " TEXT, " +
                 MovieDetailsEntry.COLUMN_POSTER_PATH + " TEXT, " +
@@ -40,6 +39,7 @@ public class MovieDbHelper extends SQLiteOpenHelper {
                 MovieDetailsEntry.COLUMN_OVERVIEW + " TEXT, " +
                 MovieDetailsEntry.COLUMN_RELEASE_DATE + " TEXT, " +
                 MovieDetailsEntry.COLUMN_GENRE_IDS + " TEXT, " +
+                MovieDetailsEntry.COLUMN_LANGUAGE + " TEXT, " +
                 MovieDetailsEntry.COLUMN_BACKDROP_PATH + " TEXT, " +
                 MovieDetailsEntry.COLUMN_BACKDROP_URL + " TEXT, " +
                 MovieDetailsEntry.COLUMN_POPULARITY + " REAL, " +
@@ -48,22 +48,22 @@ public class MovieDbHelper extends SQLiteOpenHelper {
                 " );";
 
         final String SQL_CREATE_POPULAR_MOVIES_TABLE = "CREATE TABLE " + PopularMovieEntry.TABLE_NAME + " (" +
-                PopularMovieEntry._ID + " INTEGER UNIQUE," +
-                PopularMovieEntry.COLUMN_MOVIE_ID + " INTEGER PRIMARY KEY, " +
+                PopularMovieEntry._ID + " INTEGER PRIMARY KEY," +
+                PopularMovieEntry.COLUMN_MOVIE_ID + " INTEGER UNIQUE NOT NULL, " +
                 " FOREIGN KEY(" + PopularMovieEntry.COLUMN_MOVIE_ID + ") REFERENCES " +
                 MovieDetailsEntry.TABLE_NAME + "(" + MovieDetailsEntry.COLUMN_MOVIE_ID + ")" +
                 " );";
 
-        final String SQL_CREATE_RECENT_MOVIES_TABLE = "CREATE TABLE " + RecentMovieEntry.TABLE_NAME + " (" +
-                RecentMovieEntry._ID + " INTEGER UNIQUE," +
-                RecentMovieEntry.COLUMN_MOVIE_ID + " INTEGER PRIMARY KEY, " +
-                " FOREIGN KEY(" + RecentMovieEntry.COLUMN_MOVIE_ID + ") REFERENCES " +
+        final String SQL_CREATE_RECENT_MOVIES_TABLE = "CREATE TABLE " + RatingMovieEntry.TABLE_NAME + " (" +
+                RatingMovieEntry._ID + " INTEGER PRIMARY KEY," +
+                RatingMovieEntry.COLUMN_MOVIE_ID + " INTEGER UNIQUE NOT NULL, " +
+                " FOREIGN KEY(" + RatingMovieEntry.COLUMN_MOVIE_ID + ") REFERENCES " +
                 MovieDetailsEntry.TABLE_NAME + "(" + MovieDetailsEntry.COLUMN_MOVIE_ID + ")" +
                 " );";
 
         final String SQL_CREATE_FAVORITE_MOVIES_TABLE = "CREATE TABLE " + FavoriteMovieEntry.TABLE_NAME + " (" +
-                FavoriteMovieEntry._ID + " INTEGER UNIQUE," +
-                FavoriteMovieEntry.COLUMN_MOVIE_ID + " INTEGER PRIMARY KEY, " +
+                FavoriteMovieEntry._ID + " INTEGER PRIMARY KEY," +
+                FavoriteMovieEntry.COLUMN_MOVIE_ID + " INTEGER UNIQUE NOT NULL, " +
                 " FOREIGN KEY(" + FavoriteMovieEntry.COLUMN_MOVIE_ID + ") REFERENCES " +
                 MovieDetailsEntry.TABLE_NAME + "(" + MovieDetailsEntry.COLUMN_MOVIE_ID + ")" +
                 " );";
@@ -83,7 +83,7 @@ public class MovieDbHelper extends SQLiteOpenHelper {
 
         db.execSQL("DROP TABLE IF EXISTS " + MovieDetailsEntry.TABLE_NAME);
         db.execSQL("DROP TABLE IF EXISTS " + PopularMovieEntry.TABLE_NAME);
-        db.execSQL("DROP TABLE IF EXISTS " + RecentMovieEntry.TABLE_NAME);
+        db.execSQL("DROP TABLE IF EXISTS " + RatingMovieEntry.TABLE_NAME);
         db.execSQL("DROP TABLE IF EXISTS " + FavoriteMovieEntry.TABLE_NAME);
         onCreate(db);
 

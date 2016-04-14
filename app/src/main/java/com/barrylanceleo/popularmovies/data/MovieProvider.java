@@ -18,12 +18,12 @@ public class MovieProvider extends ContentProvider {
     static final int MOVIE_DETAILS = 100;
     static final int MOVIE_DETAILS_WITH_ID = 101;
     static final int POPULAR_MOVIES = 200;
-    static final int RECENT_MOVIES = 300;
+    static final int RATING_MOVIES = 300;
     static final int FAVORITE_MOVIES = 400;
 
-    // query builders to get the details of popular, recent and favorite movie_ids
+    // query builders to get the details of popular, rating and favorite movie_ids
     private static final SQLiteQueryBuilder sPopularMovieDetailsQueryBuilder;
-    private static final SQLiteQueryBuilder sRecentMovieDetailsQueryBuilder;
+    private static final SQLiteQueryBuilder sRatingMovieDetailsQueryBuilder;
     private static final SQLiteQueryBuilder sFavoriteMovieDetailsQueryBuilder;
 
 
@@ -42,15 +42,15 @@ public class MovieProvider extends ContentProvider {
     }
 
     static{
-        sRecentMovieDetailsQueryBuilder = new SQLiteQueryBuilder();
+        sRatingMovieDetailsQueryBuilder = new SQLiteQueryBuilder();
 
         //This is an inner join which looks like
         //popular_movies INNER JOIN movie_details ON popular_movies.movie_id = movie_details.movie_id
-        sRecentMovieDetailsQueryBuilder.setTables(
-                MovieContract.PopularMovieEntry.TABLE_NAME + " INNER JOIN " +
+        sRatingMovieDetailsQueryBuilder.setTables(
+                MovieContract.RatingMovieEntry.TABLE_NAME + " INNER JOIN " +
                         MovieContract.MovieDetailsEntry.TABLE_NAME +
-                        " ON " + MovieContract.PopularMovieEntry.TABLE_NAME +
-                        "." + MovieContract.PopularMovieEntry.COLUMN_MOVIE_ID +
+                        " ON " + MovieContract.RatingMovieEntry.TABLE_NAME +
+                        "." + MovieContract.RatingMovieEntry.COLUMN_MOVIE_ID +
                         " = " + MovieContract.MovieDetailsEntry.TABLE_NAME +
                         "." + MovieContract.MovieDetailsEntry.COLUMN_MOVIE_ID);
     }
@@ -61,10 +61,10 @@ public class MovieProvider extends ContentProvider {
         //This is an inner join which looks like
         //popular_movies INNER JOIN movie_details ON popular_movies.movie_id = movie_details.movie_id
         sFavoriteMovieDetailsQueryBuilder.setTables(
-                MovieContract.PopularMovieEntry.TABLE_NAME + " INNER JOIN " +
+                MovieContract.FavoriteMovieEntry.TABLE_NAME + " INNER JOIN " +
                         MovieContract.MovieDetailsEntry.TABLE_NAME +
-                        " ON " + MovieContract.PopularMovieEntry.TABLE_NAME +
-                        "." + MovieContract.PopularMovieEntry.COLUMN_MOVIE_ID +
+                        " ON " + MovieContract.FavoriteMovieEntry.TABLE_NAME +
+                        "." + MovieContract.FavoriteMovieEntry.COLUMN_MOVIE_ID +
                         " = " + MovieContract.MovieDetailsEntry.TABLE_NAME +
                         "." + MovieContract.MovieDetailsEntry.COLUMN_MOVIE_ID);
     }
@@ -85,7 +85,7 @@ public class MovieProvider extends ContentProvider {
         matcher.addURI(authority, MovieContract.PATH_DETAILS +"/#", MOVIE_DETAILS_WITH_ID);
 
         matcher.addURI(authority, MovieContract.PATH_POPULAR, POPULAR_MOVIES);
-        matcher.addURI(authority, MovieContract.PATH_RECENT, RECENT_MOVIES);
+        matcher.addURI(authority, MovieContract.PATH_RATING, RATING_MOVIES);
         matcher.addURI(authority, MovieContract.PATH_FAVORITE, FAVORITE_MOVIES);
         return matcher;
     }
@@ -104,8 +104,8 @@ public class MovieProvider extends ContentProvider {
                 return MovieContract.MovieDetailsEntry.CONTENT_ITEM_TYPE;
             case POPULAR_MOVIES:
                 return MovieContract.PopularMovieEntry.CONTENT_TYPE;
-            case RECENT_MOVIES:
-                return MovieContract.RecentMovieEntry.CONTENT_TYPE;
+            case RATING_MOVIES:
+                return MovieContract.RatingMovieEntry.CONTENT_TYPE;
             case FAVORITE_MOVIES:
                 return MovieContract.FavoriteMovieEntry.CONTENT_TYPE;
 
@@ -215,8 +215,8 @@ public class MovieProvider extends ContentProvider {
                         sortOrder
                 );
                 break;
-            case RECENT_MOVIES:
-                returnCursor = sRecentMovieDetailsQueryBuilder.query(mOpenHelper.getReadableDatabase(),
+            case RATING_MOVIES:
+                returnCursor = sRatingMovieDetailsQueryBuilder.query(mOpenHelper.getReadableDatabase(),
                         projection,
                         selection,
                         selectionArgs,
@@ -269,8 +269,8 @@ public class MovieProvider extends ContentProvider {
                     throw new android.database.SQLException("Failed to insert row into " + uri);
                 break;
 
-            case RECENT_MOVIES:
-                _id = db.insertWithOnConflict(MovieContract.RecentMovieEntry.TABLE_NAME, null,
+            case RATING_MOVIES:
+                _id = db.insertWithOnConflict(MovieContract.RatingMovieEntry.TABLE_NAME, null,
                         values, SQLiteDatabase.CONFLICT_REPLACE);
                 if ( _id > 0 )
                     // return the Uri for the details table
@@ -297,6 +297,71 @@ public class MovieProvider extends ContentProvider {
     }
 
     @Override
+    public int bulkInsert(Uri uri, ContentValues[] values) {
+        final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
+        long _id;
+        int returnCount;
+        switch (sUriMatcher.match(uri)) {
+            case MOVIE_DETAILS:
+                db.beginTransaction();
+                returnCount = 0;
+                for (ContentValues value : values){
+                    _id = db.insertWithOnConflict(MovieContract.MovieDetailsEntry.TABLE_NAME, null,
+                            value, SQLiteDatabase.CONFLICT_REPLACE);
+                    if ( _id != -1)
+                        returnCount++;
+                }
+                db.setTransactionSuccessful();
+                db.endTransaction();
+                break;
+
+            case POPULAR_MOVIES:
+                db.beginTransaction();
+                returnCount = 0;
+                for (ContentValues value : values){
+                    _id = db.insertWithOnConflict(MovieContract.PopularMovieEntry.TABLE_NAME, null,
+                            value, SQLiteDatabase.CONFLICT_REPLACE);
+                    if ( _id != -1)
+                        returnCount++;
+                }
+                db.setTransactionSuccessful();
+                db.endTransaction();
+                break;
+
+            case RATING_MOVIES:
+                db.beginTransaction();
+                returnCount = 0;
+                for (ContentValues value : values){
+                    _id = db.insertWithOnConflict(MovieContract.RatingMovieEntry.TABLE_NAME, null,
+                            value, SQLiteDatabase.CONFLICT_REPLACE);
+                    if ( _id != -1)
+                        returnCount++;
+                }
+                db.setTransactionSuccessful();
+                db.endTransaction();
+                break;
+
+            case FAVORITE_MOVIES:
+                db.beginTransaction();
+                returnCount = 0;
+                for (ContentValues value : values){
+                    _id = db.insertWithOnConflict(MovieContract.FavoriteMovieEntry.TABLE_NAME, null,
+                            value, SQLiteDatabase.CONFLICT_REPLACE);
+                    if ( _id != -1)
+                        returnCount++;
+                }
+                db.setTransactionSuccessful();
+                db.endTransaction();
+                break;
+
+            default:
+                return super.bulkInsert(uri, values);
+        }
+        getContext().getContentResolver().notifyChange(uri, null);
+        return returnCount;
+    }
+
+    @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
         final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
         int rowsDeleted;
@@ -311,9 +376,9 @@ public class MovieProvider extends ContentProvider {
                         MovieContract.PopularMovieEntry.TABLE_NAME, selection, selectionArgs);
                 break;
 
-            case RECENT_MOVIES:
+            case RATING_MOVIES:
                 rowsDeleted = db.delete(
-                    MovieContract.RecentMovieEntry.TABLE_NAME, selection, selectionArgs);
+                    MovieContract.RatingMovieEntry.TABLE_NAME, selection, selectionArgs);
                 break;
 
             case FAVORITE_MOVIES:
@@ -344,9 +409,9 @@ public class MovieProvider extends ContentProvider {
                         MovieContract.PopularMovieEntry.TABLE_NAME, values, selection, selectionArgs);
                 break;
 
-            case RECENT_MOVIES:
+            case RATING_MOVIES:
                 rowsUpdated = db.update(
-                        MovieContract.RecentMovieEntry.TABLE_NAME, values, selection, selectionArgs);
+                        MovieContract.RatingMovieEntry.TABLE_NAME, values, selection, selectionArgs);
                 break;
 
             case FAVORITE_MOVIES:

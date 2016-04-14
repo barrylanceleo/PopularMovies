@@ -2,6 +2,7 @@ package com.barrylanceleo.popularmovies;
 
 
 import android.content.Context;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -12,6 +13,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.barrylanceleo.popularmovies.data.MovieContract;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
@@ -21,9 +23,11 @@ import com.squareup.picasso.Picasso;
  */
 public class MovieDetailsFragment extends Fragment {
 
+    static final String LOG_TAG = MovieGridAdapter.class.getSimpleName();
+
     private Context mContext;
     private View mRootView;
-    private Bundle mMovieDetailsBundle;
+    private int mMovie_id;
     private ProgressBar backDropProgressBar;
     private ImageView backdropImageView;
     private TextView mTitleTextView;
@@ -46,7 +50,7 @@ public class MovieDetailsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        mMovieDetailsBundle = getArguments();
+        mMovie_id = getArguments().getInt("movie_id");
 
         // Inflate the layout for this fragment
         mRootView =  inflater.inflate(R.layout.fragment_movie_details, container, false);
@@ -83,11 +87,24 @@ public class MovieDetailsFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
 
         mContext = getContext();
-
         backDropProgressBar.setVisibility(View.VISIBLE);
+        mPosterProgressBar.setVisibility(View.VISIBLE);
+
+        // query the details from the database
+        Cursor movieCursor = mContext.getContentResolver().query(
+                MovieContract.MovieDetailsEntry.buildMovieDetailsUri(mMovie_id),
+                null,
+                null,
+                null,
+                null);
+
+        //Log.v(LOG_TAG, "Loading Cursor:" + DatabaseUtils.dumpCursorToString(movieCursor));
+
+        movieCursor.moveToFirst();
 
         // load the backdrop image along with its progress bar
-        Picasso.with(mContext).load(mMovieDetailsBundle.getString("backdropUrl"))
+        Picasso.with(mContext).load(movieCursor.getString(movieCursor.getColumnIndex(
+                    MovieContract.MovieDetailsEntry.COLUMN_BACKDROP_URL)))
                 .into(backdropImageView, new Callback() {
                     @Override
                     public void onSuccess() {
@@ -101,15 +118,17 @@ public class MovieDetailsFragment extends Fragment {
                 });
 
         // set the movie title
-        mTitleTextView.setText(mMovieDetailsBundle.getString("title"));
+        mTitleTextView.setText(movieCursor.getString(movieCursor.getColumnIndex(
+                MovieContract.MovieDetailsEntry.COLUMN_TITLE)));
 
         // set the overview
         mOverviewTextView.setText("\t\t\t");
-        mOverviewTextView.append(mMovieDetailsBundle.getString("overview"));
+        mOverviewTextView.append(movieCursor.getString(movieCursor.getColumnIndex(
+                MovieContract.MovieDetailsEntry.COLUMN_OVERVIEW)));
 
         // load poster image
-        mPosterProgressBar.setVisibility(View.VISIBLE);
-        Picasso.with(mContext).load(mMovieDetailsBundle.getString("posterUrl"))
+        Picasso.with(mContext).load(movieCursor.getString(movieCursor.getColumnIndex(
+                    MovieContract.MovieDetailsEntry.COLUMN_POSTER_URL)))
                 .into(mPosterImageView, new Callback() {
                     @Override
                     public void onSuccess() {
@@ -123,10 +142,12 @@ public class MovieDetailsFragment extends Fragment {
                 });
 
         // set the release date
-        mReleaseDateTextView.append("\n" + mMovieDetailsBundle.getString("release_date"));
+        mReleaseDateTextView.append("\n" + movieCursor.getString(movieCursor.getColumnIndex(
+                MovieContract.MovieDetailsEntry.COLUMN_RELEASE_DATE)));
 
         // set the ratings
-        mRatingsTextView.append("\n" + mMovieDetailsBundle.getDouble("vote_average") + "/10");
+        mRatingsTextView.append("\n" + movieCursor.getDouble(movieCursor.getColumnIndex(
+                MovieContract.MovieDetailsEntry.COLUMN_VOTE_AVERAGE)) + "/10");
 
     }
 
