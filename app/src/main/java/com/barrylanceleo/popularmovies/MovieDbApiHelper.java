@@ -1,7 +1,6 @@
 package com.barrylanceleo.popularmovies;
 
-import android.database.Cursor;
-import android.database.MatrixCursor;
+import android.content.ContentValues;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -32,41 +31,30 @@ public final class MovieDbApiHelper {
         mApiKey = apiKey;
     }
 
-    Cursor parseJsonToCursor(JSONObject moviesJson, int startId) {
-        //create a containing all movies
-        MatrixCursor moviesCursor = new MatrixCursor(new String[]{
-                    "_id",
-                    MovieContract.MovieDetailsEntry.COLUMN_MOVIE_ID,
-                    MovieContract.MovieDetailsEntry.COLUMN_TITLE,
-                    MovieContract.MovieDetailsEntry.COLUMN_POSTER_PATH,
-                    MovieContract.MovieDetailsEntry.COLUMN_POSTER_URL,
-                    MovieContract.MovieDetailsEntry.COLUMN_ADULT,
-                    MovieContract.MovieDetailsEntry.COLUMN_OVERVIEW,
-                    MovieContract.MovieDetailsEntry.COLUMN_RELEASE_DATE,
-                    MovieContract.MovieDetailsEntry.COLUMN_GENRE_IDS,
-                    MovieContract.MovieDetailsEntry.COLUMN_LANGUAGE,
-                    MovieContract.MovieDetailsEntry.COLUMN_BACKDROP_PATH,
-                    MovieContract.MovieDetailsEntry.COLUMN_BACKDROP_URL,
-                    MovieContract.MovieDetailsEntry.COLUMN_POPULARITY,
-                    MovieContract.MovieDetailsEntry.COLUMN_VOTE_COUNT,
-                    MovieContract.MovieDetailsEntry.COLUMN_VOTE_AVERAGE }, 10);
 
+
+
+    ContentValues[] parseJsonToCv(JSONObject moviesJson, int startId) {
+
+        ContentValues [] moviesCv;
         try {
             JSONArray resultsArray = moviesJson.getJSONArray("results");
             Log.v(TAG, "Got " + resultsArray.length() + " movies from page " + moviesJson.getInt("page"));
+            moviesCv = new ContentValues[resultsArray.length()];
 
             for (int i = 0; i < resultsArray.length(); i++) {
 
                 JSONObject result = resultsArray.getJSONObject(i);
-                MatrixCursor.RowBuilder movieRow = moviesCursor.newRow();
+                moviesCv[i] = new ContentValues();
 
                 // this order depends on the column order defined above
-                movieRow.add(startId++);
-                movieRow.add(result.getInt("id"));
-                movieRow.add(result.getString("title"));
+                moviesCv[i].put("_id", startId++);
+                moviesCv[i].put(MovieContract.MovieDetailsEntry.COLUMN_MOVIE_ID, result.getInt("id"));
+                moviesCv[i].put(MovieContract.MovieDetailsEntry.COLUMN_TITLE, result.getString("title"));
 
                 String posterPath = result.getString("poster_path");
-                movieRow.add(posterPath);
+                moviesCv[i].put(MovieContract.MovieDetailsEntry.COLUMN_POSTER_PATH, posterPath);
+
                 // add the poster URL
                 Uri.Builder uriBuilder = new Uri.Builder();
                 uriBuilder.scheme("http")
@@ -75,15 +63,16 @@ public final class MovieDbApiHelper {
                         .appendPath("p")
                         .appendPath("w342")
                         .appendPath(posterPath.substring(1, posterPath.length()));
-                movieRow.add(uriBuilder.build().toString());
-                movieRow.add((result.getBoolean("adult") == true) ? 1 : 0);
-                movieRow.add(result.getString("overview"));
-                movieRow.add(result.getString("release_date"));
-                movieRow.add(result.getJSONArray("genre_ids"));
-                movieRow.add(result.getString("original_language"));
+                moviesCv[i].put(MovieContract.MovieDetailsEntry.COLUMN_POSTER_URL, uriBuilder.build().toString());
+
+                moviesCv[i].put(MovieContract.MovieDetailsEntry.COLUMN_ADULT, result.getBoolean("adult"));
+                moviesCv[i].put(MovieContract.MovieDetailsEntry.COLUMN_OVERVIEW, result.getString("overview"));
+                moviesCv[i].put(MovieContract.MovieDetailsEntry.COLUMN_RELEASE_DATE, result.getString("release_date"));
+                moviesCv[i].put(MovieContract.MovieDetailsEntry.COLUMN_GENRE_IDS, result.getJSONArray("genre_ids").toString());
+                moviesCv[i].put(MovieContract.MovieDetailsEntry.COLUMN_LANGUAGE, result.getString("original_language"));
 
                 String backdropPath = result.getString("backdrop_path");
-                movieRow.add(backdropPath);
+                moviesCv[i].put(MovieContract.MovieDetailsEntry.COLUMN_BACKDROP_PATH, backdropPath);
                 // add the backdrop URL
                 uriBuilder = new Uri.Builder();
                 uriBuilder.scheme("http")
@@ -92,23 +81,23 @@ public final class MovieDbApiHelper {
                         .appendPath("p")
                         .appendPath("w780")
                         .appendPath(backdropPath.substring(1, backdropPath.length()));
-                movieRow.add(uriBuilder.build().toString());
+                moviesCv[i].put(MovieContract.MovieDetailsEntry.COLUMN_BACKDROP_URL, uriBuilder.build().toString());
 
-                movieRow.add(result.getDouble("popularity"));
-                movieRow.add(result.getInt("vote_count"));
-                movieRow.add(result.getDouble("vote_average"));
+                moviesCv[i].put(MovieContract.MovieDetailsEntry.COLUMN_POPULARITY, result.getDouble("popularity"));
+                moviesCv[i].put(MovieContract.MovieDetailsEntry.COLUMN_VOTE_COUNT, result.getInt("vote_count"));
+                moviesCv[i].put(MovieContract.MovieDetailsEntry.COLUMN_VOTE_AVERAGE, result.getDouble("vote_average"));
             }
         } catch (JSONException e) {
             Log.e(TAG, "unable to find required tags in JSON response");
             e.printStackTrace();
+            return null;
         }
 
-        Log.v(TAG, "In MovieDbHelper.parseJsonToCursor().\nCount: " + moviesCursor.getCount());
-
-        return moviesCursor;
+        Log.v(TAG, "In MovieDbHelper.parseJsonToCv().\nCount: " + moviesCv.length);
+        return moviesCv;
     }
 
-    Cursor getMovies(String sortBy, String pageNumber, int startId, Bundle extraParameters) throws UnableToFetchData {
+    ContentValues[] getMovies(String sortBy, String pageNumber, int startId, Bundle extraParameters) throws UnableToFetchData {
 
         // build the URL to query
         Uri.Builder uriBuilder = new Uri.Builder();
@@ -145,7 +134,7 @@ public final class MovieDbApiHelper {
             Log.v(TAG, "Task Execution failed");
             throw new UnableToFetchData("No internet", e);
         }
-        return parseJsonToCursor(moviesJson, startId);
+        return parseJsonToCv(moviesJson, startId);
 
     }
 

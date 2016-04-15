@@ -5,7 +5,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.database.Cursor;
-import android.database.DatabaseUtils;
 import android.database.MergeCursor;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -140,18 +139,18 @@ public class MovieGridFragment extends Fragment implements AbsListView.OnScrollL
     public void refreshGrid() {
         // Signal SwipeRefreshLayout to start the progress indicator
         mSwipeRefreshLayout.setRefreshing(true);
-        Cursor moviesCursor;
+        ContentValues[] moviesCv;
         try {
             movieGrid_nextPageNum = 1;
-            moviesCursor = fetchMovies(1);
+            moviesCv = fetchMovies(1);
             resetMoviesGrid();
             clearDatafromDatabase(movieGrid_type);
 
             // insert into the database
-            insertIntoDb(movieGrid_type, moviesCursor);
+            insertIntoDb(movieGrid_type, moviesCv);
 
             // add the movie to the adapter
-            addMoviesToAdapter(moviesCursor);
+            addMoviesToAdapter(moviesCv);
             isOnline = true;
             // Signal SwipeRefreshLayout to end the progress indicator
             mSwipeRefreshLayout.setRefreshing(false);
@@ -296,8 +295,8 @@ public class MovieGridFragment extends Fragment implements AbsListView.OnScrollL
     }
 
 
-    Cursor fetchMovies(int startId) throws UnableToFetchData {
-        Cursor moviesCursor;
+    ContentValues[] fetchMovies(int startId) throws UnableToFetchData {
+        ContentValues[] moviesCursor;
         switch (movieGrid_type) {
             case GRID_TYPE_POPULAR:
                 moviesCursor = mMovieDbHelper.getMovies(movieGrid_type, Integer.toString(movieGrid_nextPageNum),
@@ -333,86 +332,17 @@ public class MovieGridFragment extends Fragment implements AbsListView.OnScrollL
         }
     }
 
-    void insertIntoDb(String dataType, Cursor dataCursor) {
-        Log.v(LOG_TAG, "Starting DB insert");
-        ContentValues [] detailsCvArray = new ContentValues[dataCursor.getCount()];
-        ContentValues [] idCvArray = new ContentValues[dataCursor.getCount()];
-        switch (dataType) {
-            case GRID_TYPE_POPULAR:{
-                int i = 0;
-                while (dataCursor.moveToNext()) {
-                    detailsCvArray[i] = new ContentValues();
-                    DatabaseUtils.cursorRowToContentValues(dataCursor, detailsCvArray[i]);
-                    detailsCvArray[i].remove(MovieContract.PopularMovieEntry._ID);
-                    int movie_id = detailsCvArray[i].getAsInteger(MovieContract.PopularMovieEntry.COLUMN_MOVIE_ID);
-                    idCvArray[i] = new ContentValues();
-                    idCvArray[i].put(MovieContract.PopularMovieEntry.COLUMN_MOVIE_ID, movie_id);
-                i++;
-                }
-                // insert into the popular table
-                mContext.getContentResolver().
-                        bulkInsert(MovieContract.PopularMovieEntry.CONTENT_URI, idCvArray);
+    void insertIntoDb(String dataType, ContentValues[] data) {
 
-                // insert into the details table
-                mContext.getContentResolver().
-                        bulkInsert(MovieContract.MovieDetailsEntry.CONTENT_URI, detailsCvArray);
+        new Utility.InsertIntoCpTask().execute(dataType, data, mContext);
 
-                break;
-            }
-            case GRID_TYPE_RATING:{
-
-                int i = 0;
-                while (dataCursor.moveToNext()) {
-                    detailsCvArray[i] = new ContentValues();
-                    DatabaseUtils.cursorRowToContentValues(dataCursor, detailsCvArray[i]);
-                    detailsCvArray[i].remove(MovieContract.RatingMovieEntry._ID);
-                    int movie_id = detailsCvArray[i].getAsInteger(MovieContract.RatingMovieEntry.COLUMN_MOVIE_ID);
-                    idCvArray[i] = new ContentValues();
-                    idCvArray[i].put(MovieContract.RatingMovieEntry.COLUMN_MOVIE_ID, movie_id);
-                    i++;
-                }
-                // insert into the rating table
-                mContext.getContentResolver().
-                        bulkInsert(MovieContract.RatingMovieEntry.CONTENT_URI, idCvArray);
-
-                // insert into the details table
-                mContext.getContentResolver().
-                        bulkInsert(MovieContract.MovieDetailsEntry.CONTENT_URI, detailsCvArray);
-
-                break;
-            }
-            case GRID_TYPE_FAVORITE:{
-                int i = 0;
-                while (dataCursor.moveToNext()) {
-                    detailsCvArray[i] = new ContentValues();
-                    DatabaseUtils.cursorRowToContentValues(dataCursor, detailsCvArray[i]);
-                    detailsCvArray[i].remove(MovieContract.FavoriteMovieEntry._ID);
-                    int movie_id = detailsCvArray[i].getAsInteger(MovieContract.FavoriteMovieEntry.COLUMN_MOVIE_ID);
-                    idCvArray[i] = new ContentValues();
-                    idCvArray[i].put(MovieContract.FavoriteMovieEntry.COLUMN_MOVIE_ID, movie_id);
-                    i++;
-                }
-                // insert into the favorite table
-                mContext.getContentResolver().
-                        bulkInsert(MovieContract.FavoriteMovieEntry.CONTENT_URI, idCvArray);
-
-                // insert into the details table
-                mContext.getContentResolver().
-                        bulkInsert(MovieContract.MovieDetailsEntry.CONTENT_URI, detailsCvArray);
-
-                break;
-            }
-
-            default:
-                Log.e(LOG_TAG, "Trying to insert into Invalid table");
-        }
-        Log.e(LOG_TAG, "End of DB insert");
     }
 
-    void addMoviesToAdapter(Cursor newCursor) {
+    void addMoviesToAdapter(ContentValues[] newData) {
         Log.v(LOG_TAG, "Added page " + (movieGrid_nextPageNum-1) + " of movies to the list.");
-        //Log.v(LOG_TAG, "NewCursor Data: " +DatabaseUtils.dumpCursorToString(newCursor));
+        //Log.v(LOG_TAG, "NewCursor Data: " + DatabaseUtils.dumpCursorToString(newCursor));
 
+        Cursor newCursor = Utility.parseMoviesCvToCursor(newData);
         Cursor currentCursor = mMovieGridAdapter.getCursor();
         if(currentCursor != null){
             MergeCursor mergedCursor = new MergeCursor(new Cursor[]{currentCursor, newCursor});
@@ -447,16 +377,16 @@ public class MovieGridFragment extends Fragment implements AbsListView.OnScrollL
 
     public void addMoviesToGrid() {
 
-        Cursor moviesCursor;
+        ContentValues[] moviesCv;
         try {
-            moviesCursor = fetchMovies(mMovieGridAdapter.getCount()+1);
-            Log.v(LOG_TAG, "Number of movies fetched: " +moviesCursor.getCount());
+            moviesCv = fetchMovies(mMovieGridAdapter.getCount()+1);
+            Log.v(LOG_TAG, "Number of movies fetched: " +moviesCv.length);
             //Log.v(LOG_TAG, "Data: " +DatabaseUtils.dumpCursorToString(moviesCursor));
 
             // insert into the database
-            insertIntoDb(movieGrid_type, moviesCursor);
+            insertIntoDb(movieGrid_type, moviesCv);
             // add the movie to the adapter
-            addMoviesToAdapter(moviesCursor);
+            addMoviesToAdapter(moviesCv);
             isOnline = true;
         } catch (UnableToFetchData e) {
             Log.e(LOG_TAG, "Unable to fetch data.");
