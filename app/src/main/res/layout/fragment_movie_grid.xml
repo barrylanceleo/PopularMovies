@@ -1,5 +1,6 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/movieGridFrameLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/colorBackground"
@@ -24,7 +25,7 @@
     </android.support.v4.widget.SwipeRefreshLayout>
 
     <LinearLayout
-        android:id="@+id/noInternetLayout"
+        android:id="@+id/noMoviesLayout"
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -32,11 +33,11 @@
         android:visibility="gone">
 
         <TextView
-            android:id="@+id/noInternetTextView"
+            android:id="@+id/noMoviesTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="@string/refresh_direction" />
+            android:text="@string/no_movies" />
 
     </LinearLayout>
 </FrameLayout>

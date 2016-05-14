@@ -8,7 +8,8 @@
         \nSwipe down to refresh.</string>
     <string name="fetch_data_fail_message_1_line">Unable to fetch data. Please check your Internet.</string>
     <string name="no_internet">No Internet Connection.</string>
-    <string name="refresh_direction">Pull Down to Refresh.</string>
+    <string name="no_movies">No movies to display.</string>
+    <string name="refresh_direction">Pull Down To Refresh.</string>
 
     <!--Menu options-->
     <string name="action_refresh">Refresh</string>
@@ -18,8 +19,5 @@
     <!--Shared Preferences-->
     <string name="pref_sortOrder_key">Sort Order</string>
     <string name="pref_sortOrder_default">popularity.desc</string>
-
-    <!--Refresh FAB-->
-    <string name="refresh_fab">Tap to refresh</string>
 
 </resources>

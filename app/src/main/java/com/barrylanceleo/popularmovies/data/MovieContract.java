@@ -71,6 +71,10 @@ public class MovieContract {
         //columns
         public static final String COLUMN_MOVIE_ID = "movie_id";
 
+        public static Uri buildFavoriteMovieUri(long id) {
+            return ContentUris.withAppendedId(CONTENT_URI, id);
+        }
+
     }
 
     // defines the movie details table

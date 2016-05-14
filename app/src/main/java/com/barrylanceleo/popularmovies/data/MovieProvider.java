@@ -20,6 +20,7 @@ public class MovieProvider extends ContentProvider {
     static final int POPULAR_MOVIES = 200;
     static final int RATING_MOVIES = 300;
     static final int FAVORITE_MOVIES = 400;
+    static final int FAVORITE_MOVIE_WITH_ID = 401;
 
     // query builders to get the details of popular, rating and favorite movie_ids
     private static final SQLiteQueryBuilder sPopularMovieDetailsQueryBuilder;
@@ -87,6 +88,8 @@ public class MovieProvider extends ContentProvider {
         matcher.addURI(authority, MovieContract.PATH_POPULAR, POPULAR_MOVIES);
         matcher.addURI(authority, MovieContract.PATH_RATING, RATING_MOVIES);
         matcher.addURI(authority, MovieContract.PATH_FAVORITE, FAVORITE_MOVIES);
+        matcher.addURI(authority, MovieContract.PATH_FAVORITE +"/#", FAVORITE_MOVIE_WITH_ID);
+
         return matcher;
     }
 
@@ -108,6 +111,8 @@ public class MovieProvider extends ContentProvider {
                 return MovieContract.RatingMovieEntry.CONTENT_TYPE;
             case FAVORITE_MOVIES:
                 return MovieContract.FavoriteMovieEntry.CONTENT_TYPE;
+            case FAVORITE_MOVIE_WITH_ID:
+                return MovieContract.FavoriteMovieEntry.CONTENT_ITEM_TYPE;
 
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
@@ -120,61 +125,6 @@ public class MovieProvider extends ContentProvider {
         return true;
     }
 
-    /**
-     * Implement this to handle query requests from clients.
-     * This method can be called from multiple threads, as described in
-     * <a href="{@docRoot}guide/topics/fundamentals/processes-and-threads.html#Threads">Processes
-     * and Threads</a>.
-     * <p>
-     * Example client call:<p>
-     * <pre>// Request a specific record.
-     * Cursor managedCursor = managedQuery(
-     * ContentUris.withAppendedId(Contacts.People.CONTENT_URI, 2),
-     * projection,    // Which columns to return.
-     * null,          // WHERE clause.
-     * null,          // WHERE clause value substitution
-     * People.NAME + " ASC");   // Sort order.</pre>
-     * Example implementation:<p>
-     * <pre>// SQLiteQueryBuilder is a helper class that creates the
-     * // proper SQL syntax for us.
-     * SQLiteQueryBuilder qBuilder = new SQLiteQueryBuilder();
-     *
-     * // Set the table we're querying.
-     * qBuilder.setTables(DATABASE_TABLE_NAME);
-     *
-     * // If the query ends in a specific record number, we're
-     * // being asked for a specific record, so set the
-     * // WHERE clause in our query.
-     * if((URI_MATCHER.match(uri)) == SPECIFIC_MESSAGE){
-     * qBuilder.appendWhere("_id=" + uri.getPathLeafId());
-     * }
-     *
-     * // Make the query.
-     * Cursor c = qBuilder.query(mDb,
-     * projection,
-     * selection,
-     * selectionArgs,
-     * groupBy,
-     * having,
-     * sortOrder);
-     * c.setNotificationUri(getContext().getContentResolver(), uri);
-     * return c;</pre>
-     *
-     * @param uri           The URI to query. This will be the full URI sent by the client;
-     *                      if the client is requesting a specific record, the URI will end in a record number
-     *                      that the implementation should parse and add to a WHERE or HAVING clause, specifying
-     *                      that _id value.
-     * @param projection    The list of columns to put into the cursor. If
-     *                      {@code null} all columns are included.
-     * @param selection     A selection criteria to apply when filtering rows.
-     *                      If {@code null} then all rows are included.
-     * @param selectionArgs You may include ?s in selection, which will be replaced by
-     *                      the values from selectionArgs, in order that they appear in the selection.
-     *                      The values will be bound as Strings.
-     * @param sortOrder     How the rows in the cursor should be sorted.
-     *                      If {@code null} then the provider is free to define the sort order.
-     * @return a Cursor or {@code null}.
-     */
     @Nullable
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
@@ -193,17 +143,18 @@ public class MovieProvider extends ContentProvider {
                         sortOrder
                 );
                 break;
-            case MOVIE_DETAILS_WITH_ID:
+            case MOVIE_DETAILS_WITH_ID: {
                 String movie_id = uri.getLastPathSegment();
                 returnCursor = mOpenHelper.getReadableDatabase().query(
                         MovieContract.MovieDetailsEntry.TABLE_NAME,
                         projection,
-                        MovieContract.MovieDetailsEntry.COLUMN_MOVIE_ID +" = ?",
+                        MovieContract.MovieDetailsEntry.COLUMN_MOVIE_ID + " = ?",
                         new String[]{movie_id},
                         null,
                         null,
                         sortOrder
                 );
+            }
                 break;
             case POPULAR_MOVIES:
                 returnCursor = sPopularMovieDetailsQueryBuilder.query(mOpenHelper.getReadableDatabase(),
@@ -234,6 +185,19 @@ public class MovieProvider extends ContentProvider {
                         null,
                         sortOrder
                 );
+                break;
+            case FAVORITE_MOVIE_WITH_ID: {
+                String movie_id = uri.getLastPathSegment();
+                returnCursor = sFavoriteMovieDetailsQueryBuilder.query(mOpenHelper.getReadableDatabase(),
+                        projection,
+                        MovieContract.FavoriteMovieEntry.TABLE_NAME +"."
+                                +MovieContract.FavoriteMovieEntry.COLUMN_MOVIE_ID +" = ?",
+                        new String[]{movie_id},
+                        null,
+                        null,
+                        sortOrder
+                );
+            }
                 break;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);

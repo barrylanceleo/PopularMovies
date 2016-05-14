@@ -59,7 +59,7 @@ public class MovieGridAdapter extends CursorAdapter {
             if (mProgressBar != null) {
                 mProgressBar.setVisibility(View.GONE);
                 mPosterView.setScaleType(ImageView.ScaleType.CENTER);
-                mPosterView.setImageResource(R.drawable.ic_error_black_48dp);
+                mPosterView.setImageResource(R.drawable.ic_error_outline_black_36dp);
             }
         }
     }

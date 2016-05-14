@@ -8,5 +8,6 @@
     <dimen name="grid_poster_padding">5dp</dimen>
     <dimen name="detail_poster_padding">10dp</dimen>
     <dimen name="backdrop_layout_height">230dp</dimen>
+    <dimen name="fav_button_dimen">48dp</dimen>
 
 </resources>

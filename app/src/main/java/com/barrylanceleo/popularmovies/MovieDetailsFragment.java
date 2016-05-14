@@ -1,10 +1,13 @@
 package com.barrylanceleo.popularmovies;
 
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,14 +31,16 @@ public class MovieDetailsFragment extends Fragment {
     private Context mContext;
     private View mRootView;
     private int mMovie_id;
-    private ProgressBar backDropProgressBar;
-    private ImageView backdropImageView;
+    private ProgressBar mBackDropProgressBar;
+    private ImageView mBackdropImageView;
+    private ImageView mFavImageView;
     private TextView mTitleTextView;
     private TextView mOverviewTextView;
     private ProgressBar mPosterProgressBar;
     private ImageView mPosterImageView;
     private TextView mReleaseDateTextView;
     private TextView mRatingsTextView;
+    private boolean isFavorite;
 
     public MovieDetailsFragment() {
         // Required empty public constructor
@@ -55,9 +60,10 @@ public class MovieDetailsFragment extends Fragment {
         // Inflate the layout for this fragment
         mRootView =  inflater.inflate(R.layout.fragment_movie_details, container, false);
 
-        backDropProgressBar = (ProgressBar) mRootView.findViewById(R.id.backdrop_image_details_progress);
-        backdropImageView = (ImageView) mRootView.findViewById(R.id.backdropImageViewDetails);
+        mBackDropProgressBar = (ProgressBar) mRootView.findViewById(R.id.backdrop_image_details_progress);
+        mBackdropImageView = (ImageView) mRootView.findViewById(R.id.backdropImageViewDetails);
         mTitleTextView = (TextView) mRootView.findViewById(R.id.movie_title_details);
+        mFavImageView = (ImageView) mRootView.findViewById(R.id.fav_image_details);
         mOverviewTextView = (TextView) mRootView.findViewById(R.id.movie_overview_details);
         mPosterProgressBar = (ProgressBar) mRootView.findViewById(R.id.poster_details_progress);
         mPosterImageView = (ImageView) mRootView.findViewById(R.id.poster_details_image_view);
@@ -87,7 +93,7 @@ public class MovieDetailsFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
 
         mContext = getContext();
-        backDropProgressBar.setVisibility(View.VISIBLE);
+        mBackDropProgressBar.setVisibility(View.VISIBLE);
         mPosterProgressBar.setVisibility(View.VISIBLE);
 
         // query the details from the database
@@ -99,16 +105,19 @@ public class MovieDetailsFragment extends Fragment {
                 null);
 
         //Log.v(LOG_TAG, "Loading Cursor:" + DatabaseUtils.dumpCursorToString(movieCursor));
+        if(movieCursor == null) {
+            return;
+        }
 
         movieCursor.moveToFirst();
 
         // load the backdrop image along with its progress bar
         Picasso.with(mContext).load(movieCursor.getString(movieCursor.getColumnIndex(
                     MovieContract.MovieDetailsEntry.COLUMN_BACKDROP_URL)))
-                .into(backdropImageView, new Callback() {
+                .into(mBackdropImageView, new Callback() {
                     @Override
                     public void onSuccess() {
-                        backDropProgressBar.setVisibility(View.GONE);
+                        mBackDropProgressBar.setVisibility(View.GONE);
                     }
 
                     @Override
@@ -120,6 +129,70 @@ public class MovieDetailsFragment extends Fragment {
         // set the movie title
         mTitleTextView.setText(movieCursor.getString(movieCursor.getColumnIndex(
                 MovieContract.MovieDetailsEntry.COLUMN_TITLE)));
+
+        // setup the fav button, check if its a favorite movie
+        Cursor favCursor = mContext.getContentResolver().query(
+                MovieContract.FavoriteMovieEntry.buildFavoriteMovieUri(mMovie_id),
+                null,
+                null,
+                null,
+                null);
+
+        if (favCursor == null || favCursor.getCount() ==  0) {
+            isFavorite = false;
+            mFavImageView.setImageResource(R.drawable.ic_star_border_black_48dp);
+        }
+        else {
+            isFavorite = true;
+            mFavImageView.setImageResource(R.drawable.ic_star_black_48dp);
+        }
+
+        mFavImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(isFavorite) {
+                    // removing from favorites
+                    new AsyncTask<Integer, Void, Void>(){
+                        @Override
+                        protected Void doInBackground(Integer... params) {
+                            getContext().getContentResolver().delete(
+                                    MovieContract.FavoriteMovieEntry.CONTENT_URI,
+                                    MovieContract.FavoriteMovieEntry.COLUMN_MOVIE_ID +" = ?",
+                                    new String[]{Integer.toString(mMovie_id)}
+                            );
+                            return null;
+                        }
+                    }.execute();
+
+                    mFavImageView.setImageResource(R.drawable.ic_star_border_black_48dp);
+                    isFavorite = false;
+                    Snackbar.make(mRootView.findViewById(R.id.fav_image_details),
+                            "Removed from favorites",
+                            Snackbar.LENGTH_SHORT).setAction("Action", null).show();
+                }
+                else {
+                    // add to favorites
+                    new AsyncTask<Integer, Void, Void>(){
+                        @Override
+                        protected Void doInBackground(Integer... params) {
+                            ContentValues favMovieCV = new ContentValues();
+                            favMovieCV.put(MovieContract.FavoriteMovieEntry.COLUMN_MOVIE_ID, mMovie_id);
+                            getContext().getContentResolver().insert(
+                                    MovieContract.FavoriteMovieEntry.CONTENT_URI,
+                                    favMovieCV
+                            );
+                            return null;
+                        }
+                    }.execute();
+                    mFavImageView.setImageResource(R.drawable.ic_star_black_48dp);
+                    isFavorite = true;
+                    Snackbar.make(mRootView.findViewById(R.id.fav_image_details),
+                            "Added to favorites",
+                            Snackbar.LENGTH_SHORT).setAction("Action", null).show();
+                }
+
+            }
+        });
 
         // set the overview
         mOverviewTextView.setText("\t\t\t");
