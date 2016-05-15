@@ -64,7 +64,7 @@ public class MovieDetailsFragment extends Fragment {
         mBackdropImageView = (ImageView) mRootView.findViewById(R.id.backdropImageViewDetails);
         mTitleTextView = (TextView) mRootView.findViewById(R.id.movie_title_details);
         mFavImageView = (ImageView) mRootView.findViewById(R.id.fav_image_details);
-        mOverviewTextView = (TextView) mRootView.findViewById(R.id.movie_overview_details);
+        mOverviewTextView = (TextView) mRootView.findViewById(R.id.details_overview_text);
         mPosterProgressBar = (ProgressBar) mRootView.findViewById(R.id.poster_details_progress);
         mPosterImageView = (ImageView) mRootView.findViewById(R.id.poster_details_image_view);
         mReleaseDateTextView = (TextView) mRootView.findViewById(R.id.release_date_details);
@@ -95,6 +95,7 @@ public class MovieDetailsFragment extends Fragment {
         mContext = getContext();
         mBackDropProgressBar.setVisibility(View.VISIBLE);
         mPosterProgressBar.setVisibility(View.VISIBLE);
+        getActivity().setTitle("About the movie");
 
         // query the details from the database
         Cursor movieCursor = mContext.getContentResolver().query(
