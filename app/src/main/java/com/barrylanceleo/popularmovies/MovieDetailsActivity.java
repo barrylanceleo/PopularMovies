@@ -7,9 +7,14 @@ import android.support.v4.app.TaskStackBuilder;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.MenuItem;
 
-public class MovieDetailsActivity extends AppCompatActivity {
+public class MovieDetailsActivity extends AppCompatActivity implements MovieDetailsFragment.FragmentCallback {
+    static final String LOG_TAG = MovieDetailsFragment.class.getSimpleName();
+    private int mMovie_id = 0;
+    private int mFragmentLevel = 0;
+
     /**
      * This hook is called whenever an item in your options menu is selected.
      * The default implementation simply returns false to have the normal
@@ -31,6 +36,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
 
         switch (item.getItemId()) {
             case android.R.id.home:
+                Log.i(LOG_TAG, "Home button clicked");
                 Intent upIntent = NavUtils.getParentActivityIntent(this);
                 // if the parent activity needs to be recreated, create it
                 // otherwise bring back the already existing activity
@@ -46,6 +52,16 @@ public class MovieDetailsActivity extends AppCompatActivity {
     }
 
     @Override
+    public void onBackPressed() {
+        Log.i(LOG_TAG, "Back button clicked");
+        mFragmentLevel--;
+        if(mFragmentLevel == 1) {
+            setTitle("About the movie");
+        }
+        super.onBackPressed();
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_movie_details);
@@ -57,16 +73,41 @@ public class MovieDetailsActivity extends AppCompatActivity {
         if (actionBar != null)
             actionBar.setDisplayHomeAsUpEnabled(true);
 
-
         // get the extras from Intent
         Intent mIntent = getIntent();
         Bundle movieDetailsBundle = mIntent.getExtras();
-        MovieDetailsFragment fragment = new MovieDetailsFragment();
-        fragment.setArguments(movieDetailsBundle);
-
+        mMovie_id = movieDetailsBundle.getInt("movie_id");
+        MovieDetailsFragment movieDetailsFragment = new MovieDetailsFragment();
+        movieDetailsFragment.setArguments(movieDetailsBundle);
+        mFragmentLevel++;
+        setTitle("About the movie");
         getSupportFragmentManager().beginTransaction()
-                .add(R.id.movie_detail_container, fragment)
+                .add(R.id.movie_detail_container, movieDetailsFragment)
                 .commit();
     }
 
+    @Override
+    public void onItemSelected(Bundle selectedItemDetails) {
+        String selectedItem = selectedItemDetails.getString("button");
+        if(selectedItem == null) {
+            return;
+        }
+        switch (selectedItem) {
+            case "photos":
+                break;
+            case "videos":
+                break;
+            case "reviews":
+                ReviewFragment reviewFragment = ReviewFragment.newInstance(mMovie_id);
+                mFragmentLevel++;
+                setTitle("Reviews");
+                getSupportFragmentManager().beginTransaction()
+                        .add(R.id.movie_detail_container, reviewFragment)
+                        .addToBackStack(null)
+                        .commit();
+                break;
+            default:
+                return;
+        }
+    }
 }

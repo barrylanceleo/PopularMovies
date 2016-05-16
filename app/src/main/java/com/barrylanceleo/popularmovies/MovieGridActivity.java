@@ -4,14 +4,14 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
-public class MainActivity extends AppCompatActivity implements MovieGridFragment.Callback
+public class MovieGridActivity extends AppCompatActivity implements MovieGridFragment.Callback
 {
 
-    static final String LOG_TAG = MainActivity.class.getSimpleName();
+    static final String LOG_TAG = MovieGridActivity.class.getSimpleName();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_movie_grid);
     }
 
     /**

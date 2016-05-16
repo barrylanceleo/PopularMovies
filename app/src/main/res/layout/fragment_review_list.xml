@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.barrylanceleo.popularmovies.ReviewFragment"
+    android:id="@+id/review_list_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorBackground">
+    <android.support.v4.widget.SwipeRefreshLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/review_swipreRefresh"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <ListView xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/review_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:divider="@color/colorBackground"
+            android:dividerHeight="@dimen/card_space"
+            tools:listitem="@layout/list_item_review" />
+    </android.support.v4.widget.SwipeRefreshLayout>
+
+</RelativeLayout>

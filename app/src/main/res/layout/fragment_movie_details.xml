@@ -33,6 +33,57 @@
                 android:scaleType="centerCrop" />
         </RelativeLayout>
 
+        <!-- photos, videos and reviews button -->
+        <LinearLayout
+            android:id="@+id/details_buttons"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_alignBottom="@id/backdrop_image_layout">
+            <Button
+                android:id="@+id/details_photos_button"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:background="#9d000000"
+                android:textAllCaps="true"
+                android:textStyle="bold"
+                android:textColor="@color/colorCardBackground"
+                android:text="Photos" />
+            <View
+                android:layout_width="1dp"
+                android:layout_height="match_parent"
+                android:background="@color/colorBackground"/>
+            <Button
+                android:id="@+id/details_videos_button"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:background="#9d000000"
+                android:textAllCaps="true"
+                android:textStyle="bold"
+                android:textColor="@color/colorCardBackground"
+                android:text="Videos"/>
+            <View
+                android:layout_width="1dp"
+                android:layout_height="match_parent"
+                android:background="@color/colorBackground"/>
+            <Button
+                android:id="@+id/details_reviews_button"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:background="#9d000000"
+                android:textAllCaps="true"
+                android:textStyle="bold"
+                android:textColor="@color/colorCardBackground"
+                android:text="Reviews"/>
+
+        </LinearLayout>
+
         <!-- Tittle Card layout -->
         <RelativeLayout
             android:id="@+id/details_title_layout"

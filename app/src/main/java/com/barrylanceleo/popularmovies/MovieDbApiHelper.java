@@ -17,29 +17,35 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 
 public final class MovieDbApiHelper {
 
-    public static final String TAG = MovieDbApiHelper.class.getSimpleName();
-    public static final int movieCountPerPage = 20;
-    public final String mApiKey;
+    private static final String LOG_TAG = MovieDbApiHelper.class.getSimpleName();
+    private static final int movieCountPerPage = 20;
+    private final String mApiKey;
+    private static MovieDbApiHelper mInstance;
 
-
-    public MovieDbApiHelper(String apiKey){
+    private MovieDbApiHelper(String apiKey){
         mApiKey = apiKey;
     }
 
-
-
+    public static MovieDbApiHelper getInstance(String apiKey) {
+        if(mInstance == null) {
+            mInstance = new MovieDbApiHelper(apiKey);
+        }
+        return mInstance;
+    }
 
     ContentValues[] parseJsonToCv(JSONObject moviesJson, int startId) {
 
         ContentValues [] moviesCv;
         try {
             JSONArray resultsArray = moviesJson.getJSONArray("results");
-            Log.v(TAG, "Got " + resultsArray.length() + " movies from page " + moviesJson.getInt("page"));
+            Log.v(LOG_TAG, "Got " + resultsArray.length() + " movies from page " + moviesJson.getInt("page"));
             moviesCv = new ContentValues[resultsArray.length()];
 
             for (int i = 0; i < resultsArray.length(); i++) {
@@ -88,12 +94,12 @@ public final class MovieDbApiHelper {
                 moviesCv[i].put(MovieContract.MovieDetailsEntry.COLUMN_VOTE_AVERAGE, result.getDouble("vote_average"));
             }
         } catch (JSONException e) {
-            Log.e(TAG, "unable to find required tags in JSON response");
+            Log.e(LOG_TAG, "unable to find required tags in JSON response");
             e.printStackTrace();
             return null;
         }
 
-        Log.v(TAG, "In MovieDbHelper.parseJsonToCv().\nCount: " + moviesCv.length);
+        Log.v(LOG_TAG, "In MovieDbHelper.parseJsonToCv().\nCount: " + moviesCv.length);
         return moviesCv;
     }
 
@@ -122,16 +128,16 @@ public final class MovieDbApiHelper {
         //query the URL
         JSONObject moviesJson = null;
         try {
-            Log.v(TAG, "Querying " + requestString);
+            Log.v(LOG_TAG, "Querying " + requestString);
             AsyncTask queryTask = new queryTask().execute(requestString);
             moviesJson = (JSONObject) queryTask.get();
         } catch (CancellationException e) {
-            Log.v(TAG, "Task Cancelled");
+            Log.v(LOG_TAG, "Task Cancelled");
             throw new UnableToFetchData("No internet", e);
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
-            Log.v(TAG, "Task Execution failed");
+            Log.v(LOG_TAG, "Task Execution failed");
             throw new UnableToFetchData("No internet", e);
         }
         return parseJsonToCv(moviesJson, startId);
@@ -157,7 +163,7 @@ public final class MovieDbApiHelper {
                 moviesJson = new JSONObject(sb.toString());
                 br.close();
             } catch (IOException e) {
-                Log.v(TAG, "Exception: No internet?");
+                Log.v(LOG_TAG, "Exception: No internet?");
                 cancel(true);
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -167,5 +173,52 @@ public final class MovieDbApiHelper {
             }
             return moviesJson;
         }
+    }
+
+
+    public List<JSONObject> getReviews(int movieId, int pageNum) {
+
+        // build the URL to query
+        Uri.Builder uriBuilder = new Uri.Builder();
+        uriBuilder.scheme("http")
+                .authority("api.themoviedb.org")
+                .appendPath("3")
+                .appendPath("movie")
+                .appendPath(Integer.toString(movieId))
+                .appendPath("reviews")
+                .appendQueryParameter("page", Integer.toString(pageNum))
+                .appendQueryParameter("api_key", this.mApiKey);
+
+        String requestString = uriBuilder.build().toString();
+        Log.i(LOG_TAG, "Querying: " +requestString);
+
+        HttpURLConnection urlConnection = null;
+        JSONObject reviewsJson = null;
+        try {
+            URL requestUrl = new URL(requestString);
+            urlConnection = (HttpURLConnection) requestUrl.openConnection();
+            BufferedReader br = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = br.readLine()) != null) {
+                sb.append(line).append("\n");
+            }
+            reviewsJson = new JSONObject(sb.toString());
+            br.close();
+            JSONArray reviewJsonArray = reviewsJson.getJSONArray("results");
+            List<JSONObject> reviewList = new ArrayList<>();
+            for(int i = 0; i < reviewJsonArray.length(); i++) {
+                reviewList.add(reviewJsonArray.getJSONObject(i));
+            }
+            return reviewList;
+        } catch (IOException e) {
+            Log.v(LOG_TAG, "Exception: No internet?");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        } finally {
+            assert urlConnection != null;
+            urlConnection.disconnect();
+        }
+        return new ArrayList<>();
     }
 }

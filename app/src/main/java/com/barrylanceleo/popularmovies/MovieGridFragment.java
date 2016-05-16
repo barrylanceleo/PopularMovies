@@ -87,7 +87,7 @@ public class MovieGridFragment extends Fragment implements AbsListView.OnScrollL
      */
     public interface Callback {
         /**
-         * DetailFragmentCallback for when an item has been selected.
+         * FragmentCallback for when an item has been selected.
          */
         void onItemSelected(Bundle movieDetails);
     }
@@ -132,7 +132,7 @@ public class MovieGridFragment extends Fragment implements AbsListView.OnScrollL
         //create a grid manager which creates a grid view and implements its listeners and handles data
         mContext = getContext();
         movieGrid_type = Utility.getPreferredSortOrder(mContext);
-        mMovieDbHelper = new MovieDbApiHelper(mContext.getResources().getString(R.string.api_key));
+        mMovieDbHelper = MovieDbApiHelper.getInstance(mContext.getResources().getString(R.string.api_key));
         initializeMoviesGrid();
 
     }

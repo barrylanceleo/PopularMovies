@@ -12,6 +12,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -26,7 +27,7 @@ import com.squareup.picasso.Picasso;
  */
 public class MovieDetailsFragment extends Fragment {
 
-    static final String LOG_TAG = MovieGridAdapter.class.getSimpleName();
+    static final String LOG_TAG = MovieDetailsFragment.class.getSimpleName();
 
     private Context mContext;
     private View mRootView;
@@ -40,7 +41,23 @@ public class MovieDetailsFragment extends Fragment {
     private ImageView mPosterImageView;
     private TextView mReleaseDateTextView;
     private TextView mRatingsTextView;
+    private Button mPhotosButton;
+    private Button mVideosButton;
+    private Button mReviewsButton;
+
     private boolean isFavorite;
+
+    /**
+     * A callback interface that all activities containing this fragment must
+     * implement. This mechanism allows activities to be notified of item
+     * selections.
+     */
+    public interface FragmentCallback {
+        /**
+         * FragmentCallback for when an item has been selected.
+         */
+        void onItemSelected(Bundle selectedItemDetails);
+    }
 
     public MovieDetailsFragment() {
         // Required empty public constructor
@@ -69,6 +86,9 @@ public class MovieDetailsFragment extends Fragment {
         mPosterImageView = (ImageView) mRootView.findViewById(R.id.poster_details_image_view);
         mReleaseDateTextView = (TextView) mRootView.findViewById(R.id.release_date_details);
         mRatingsTextView = (TextView) mRootView.findViewById(R.id.ratings_details);
+        mPhotosButton = (Button) mRootView.findViewById(R.id.details_photos_button);
+        mVideosButton = (Button) mRootView.findViewById(R.id.details_videos_button);
+        mReviewsButton = (Button) mRootView.findViewById(R.id.details_reviews_button);
 
         return mRootView;
 
@@ -95,7 +115,6 @@ public class MovieDetailsFragment extends Fragment {
         mContext = getContext();
         mBackDropProgressBar.setVisibility(View.VISIBLE);
         mPosterProgressBar.setVisibility(View.VISIBLE);
-        getActivity().setTitle("About the movie");
 
         // query the details from the database
         Cursor movieCursor = mContext.getContentResolver().query(
@@ -223,6 +242,36 @@ public class MovieDetailsFragment extends Fragment {
         mRatingsTextView.append("\n" + movieCursor.getDouble(movieCursor.getColumnIndex(
                 MovieContract.MovieDetailsEntry.COLUMN_VOTE_AVERAGE)) + "/10");
 
+        // set up the photos, videos and reviews button
+        mPhotosButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // call the onItemSelected of the containing activity
+                Bundle selectedItemDetails = new Bundle();
+                selectedItemDetails.putString("button", "photos");
+                ((MovieDetailsFragment.FragmentCallback) getActivity()).onItemSelected(selectedItemDetails);
+            }
+        });
+
+        mVideosButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // call the onItemSelected of the containing activity
+                Bundle selectedItemDetails = new Bundle();
+                selectedItemDetails.putString("button", "videos");
+                ((MovieDetailsFragment.FragmentCallback) getActivity()).onItemSelected(selectedItemDetails);
+            }
+        });
+
+        mReviewsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // call the onItemSelected of the containing activity
+                Bundle selectedItemDetails = new Bundle();
+                selectedItemDetails.putString("button", "reviews");
+                ((MovieDetailsFragment.FragmentCallback) getActivity()).onItemSelected(selectedItemDetails);
+            }
+        });
     }
 
 }
