@@ -1,4 +1,4 @@
-package com.barrylanceleo.popularmovies;
+package com.barrylanceleo.popularmovies.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -9,6 +9,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
+
+import com.barrylanceleo.popularmovies.fragments.MovieDetailsFragment;
+import com.barrylanceleo.popularmovies.R;
+import com.barrylanceleo.popularmovies.fragments.ReviewFragment;
 
 public class MovieDetailsActivity extends AppCompatActivity implements MovieDetailsFragment.FragmentCallback {
     static final String LOG_TAG = MovieDetailsFragment.class.getSimpleName();

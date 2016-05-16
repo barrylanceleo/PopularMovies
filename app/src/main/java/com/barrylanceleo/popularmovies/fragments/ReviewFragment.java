@@ -1,26 +1,33 @@
-package com.barrylanceleo.popularmovies;
+package com.barrylanceleo.popularmovies.fragments;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
+import android.widget.TextView;
+
+import com.barrylanceleo.popularmovies.MovieDbApiHelper;
+import com.barrylanceleo.popularmovies.R;
+import com.barrylanceleo.popularmovies.adapters.ReviewListAdapter;
 
 import org.json.JSONObject;
 
 import java.util.List;
 
 public class ReviewFragment extends Fragment {
-    static final String LOG_TAG = ReviewFragment.class.getSimpleName();
+    //private static final String LOG_TAG = ReviewFragment.class.getSimpleName();
 
     private static final String MOVIE_ID = "movie_id";
     private int mMovieId;
     private ListView mReviewListView;
     private ReviewListAdapter mReviewListAdapter;
     private SwipeRefreshLayout mReviewSwipeRefreshLayout;
+    private TextView mNoReviewsTextView;
     private MovieDbApiHelper mMovieDbHelper;
 
     /**
@@ -50,7 +57,6 @@ public class ReviewFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_review_list, container, false);
-        mReviewListView = (ListView) rootView.findViewById(R.id.review_list);
         mReviewSwipeRefreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.review_swipreRefresh);
         mReviewSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -58,6 +64,8 @@ public class ReviewFragment extends Fragment {
                 refreshReviews(mMovieId);
             }
         });
+        mReviewListView = (ListView) rootView.findViewById(R.id.review_list);
+        mNoReviewsTextView = (TextView) rootView.findViewById(R.id.review_empty_textView);
         return rootView;
     }
 
@@ -75,8 +83,8 @@ public class ReviewFragment extends Fragment {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                final List<JSONObject> reviewList = mMovieDbHelper.getReviews(movieId, 1);
-                if(reviewList.size() != 0) {
+                try {
+                    final List<JSONObject> reviewList = mMovieDbHelper.getReviews(movieId, 1);
                     ReviewFragment.this.getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -84,16 +92,35 @@ public class ReviewFragment extends Fragment {
                             mReviewListAdapter.addAll(reviewList);
                         }
                     });
+                    onRefreshCompleted(reviewList.size());
                 }
-                onRefreshCompleted(0);
+                catch (MovieDbApiHelper.UnableToFetchDataException e) {
+                    onRefreshCompleted(-1);
+                }
             }
         }).start();
     }
 
-    void onRefreshCompleted(int reviewCount) {
+    void onRefreshCompleted(final int reviewCount) {
         ReviewFragment.this.getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                if(reviewCount <= 0) {
+                    // no reviews
+                    mNoReviewsTextView.setVisibility(View.VISIBLE);
+                    mReviewListView.setVisibility(View.GONE);
+
+                    if(reviewCount < 0) {
+                        // no internet
+                        Snackbar.make(mNoReviewsTextView,
+                                getString(R.string.no_internet) +" " +getString(R.string.refresh_direction),
+                                Snackbar.LENGTH_LONG).setAction("Action", null).show();
+                    }
+                }
+                else {
+                    mNoReviewsTextView.setVisibility(View.GONE);
+                    mReviewListView.setVisibility(View.VISIBLE);
+                }
                 mReviewSwipeRefreshLayout.setRefreshing(false);
             }
         });

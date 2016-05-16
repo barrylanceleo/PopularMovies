@@ -1,8 +1,7 @@
-package com.barrylanceleo.popularmovies;
+package com.barrylanceleo.popularmovies.fragments;
 
 
 import android.content.ContentValues;
-import android.content.Context;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -17,6 +16,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.barrylanceleo.popularmovies.R;
 import com.barrylanceleo.popularmovies.data.MovieContract;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
@@ -27,9 +27,8 @@ import com.squareup.picasso.Picasso;
  */
 public class MovieDetailsFragment extends Fragment {
 
-    static final String LOG_TAG = MovieDetailsFragment.class.getSimpleName();
+    //static final String LOG_TAG = MovieDetailsFragment.class.getSimpleName();
 
-    private Context mContext;
     private View mRootView;
     private int mMovie_id;
     private ProgressBar mBackDropProgressBar;
@@ -112,12 +111,11 @@ public class MovieDetailsFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        mContext = getContext();
         mBackDropProgressBar.setVisibility(View.VISIBLE);
         mPosterProgressBar.setVisibility(View.VISIBLE);
 
         // query the details from the database
-        Cursor movieCursor = mContext.getContentResolver().query(
+        Cursor movieCursor = getContext().getContentResolver().query(
                 MovieContract.MovieDetailsEntry.buildMovieDetailsUri(mMovie_id),
                 null,
                 null,
@@ -132,7 +130,7 @@ public class MovieDetailsFragment extends Fragment {
         movieCursor.moveToFirst();
 
         // load the backdrop image along with its progress bar
-        Picasso.with(mContext).load(movieCursor.getString(movieCursor.getColumnIndex(
+        Picasso.with(getContext()).load(movieCursor.getString(movieCursor.getColumnIndex(
                     MovieContract.MovieDetailsEntry.COLUMN_BACKDROP_URL)))
                 .into(mBackdropImageView, new Callback() {
                     @Override
@@ -151,7 +149,7 @@ public class MovieDetailsFragment extends Fragment {
                 MovieContract.MovieDetailsEntry.COLUMN_TITLE)));
 
         // setup the fav button, check if its a favorite movie
-        Cursor favCursor = mContext.getContentResolver().query(
+        Cursor favCursor = getContext().getContentResolver().query(
                 MovieContract.FavoriteMovieEntry.buildFavoriteMovieUri(mMovie_id),
                 null,
                 null,
@@ -165,6 +163,10 @@ public class MovieDetailsFragment extends Fragment {
         else {
             isFavorite = true;
             mFavImageView.setImageResource(R.drawable.ic_star_black_48dp);
+        }
+
+        if(favCursor != null) {
+            favCursor.close();
         }
 
         mFavImageView.setOnClickListener(new View.OnClickListener() {
@@ -214,13 +216,14 @@ public class MovieDetailsFragment extends Fragment {
             }
         });
 
+
         // set the overview
         mOverviewTextView.setText("\t\t\t");
         mOverviewTextView.append(movieCursor.getString(movieCursor.getColumnIndex(
                 MovieContract.MovieDetailsEntry.COLUMN_OVERVIEW)));
 
         // load poster image
-        Picasso.with(mContext).load(movieCursor.getString(movieCursor.getColumnIndex(
+        Picasso.with(getContext()).load(movieCursor.getString(movieCursor.getColumnIndex(
                     MovieContract.MovieDetailsEntry.COLUMN_POSTER_URL)))
                 .into(mPosterImageView, new Callback() {
                     @Override
@@ -272,6 +275,8 @@ public class MovieDetailsFragment extends Fragment {
                 ((MovieDetailsFragment.FragmentCallback) getActivity()).onItemSelected(selectedItemDetails);
             }
         });
+
+        movieCursor.close();
     }
 
 }

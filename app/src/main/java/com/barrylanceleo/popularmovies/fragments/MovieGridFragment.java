@@ -1,4 +1,4 @@
-package com.barrylanceleo.popularmovies;
+package com.barrylanceleo.popularmovies.fragments;
 
 import android.app.Activity;
 import android.content.ContentValues;
@@ -24,13 +24,12 @@ import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.LinearLayout;
 
+import com.barrylanceleo.popularmovies.MovieDbApiHelper;
+import com.barrylanceleo.popularmovies.R;
+import com.barrylanceleo.popularmovies.Utility;
+import com.barrylanceleo.popularmovies.adapters.MovieGridAdapter;
 import com.barrylanceleo.popularmovies.data.MovieContract;
 
-
-/**
- * A simple {@link Fragment} subclass.
- *
- */
 public class MovieGridFragment extends Fragment implements AbsListView.OnScrollListener, AdapterView.OnItemClickListener{
 
     static final String LOG_TAG = MovieGridFragment.class.getSimpleName();
@@ -39,7 +38,7 @@ public class MovieGridFragment extends Fragment implements AbsListView.OnScrollL
     private View mRootView;
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private LinearLayout mNoMoviesLayout;
-    private final int MOVIEGRID_THRESHOLD = 10;
+    private static final int MOVIE_GRID_THRESHOLD = 10;
     private int movieGrid_nextPageNum = 1;
     private String movieGrid_type;
     private MovieGridAdapter mMovieGridAdapter;
@@ -70,14 +69,6 @@ public class MovieGridFragment extends Fragment implements AbsListView.OnScrollL
     public void setMovieGrid_type(String movieGrid_type) {
         Utility.setPreferredSortOrder(mContext, movieGrid_type);
         this.movieGrid_type = movieGrid_type;
-    }
-
-    public MovieGridAdapter getmMovieGridAdapter() {
-        return mMovieGridAdapter;
-    }
-
-    public void setmMovieGridAdapter(MovieGridAdapter mMovieGridAdapter) {
-        this.mMovieGridAdapter = mMovieGridAdapter;
     }
 
     /**
@@ -200,8 +191,7 @@ public class MovieGridFragment extends Fragment implements AbsListView.OnScrollL
                     });
                     isOnline = true;
                     onRefreshComplete(moviesCv.length);
-                    return;
-                } catch (UnableToFetchData e) {
+                } catch (MovieDbApiHelper.UnableToFetchDataException e) {
                     isOnline = false;
                     Log.e(LOG_TAG, "Unable to fetch data.");
                     // if we are not online load data from the database
@@ -209,7 +199,6 @@ public class MovieGridFragment extends Fragment implements AbsListView.OnScrollL
                             getString(R.string.no_internet) +" " +getString(R.string.refresh_direction),
                             Snackbar.LENGTH_LONG).setAction("Action", null).show();
                     onRefreshComplete(loadDataFromDatabase());
-                    return;
                 }
             }
         }).start();
@@ -267,19 +256,16 @@ public class MovieGridFragment extends Fragment implements AbsListView.OnScrollL
                 return 0;
         }
         Log.i(LOG_TAG, "Done Loading data from database.");
-        Log.v(LOG_TAG, "Number of Movies in Adaptor: " +moviesCursor.getCount());
+        Log.v(LOG_TAG, "Number of Movies in Adaptor: " +((moviesCursor == null)?0:moviesCursor.getCount()));
         MovieGridFragment.this.getActivity().runOnUiThread(new Runnable() {
             public void run() {
                 mMovieGridAdapter.changeCursor(moviesCursor);            }
         });
-        return moviesCursor.getCount();
+        return (moviesCursor == null)?0:moviesCursor.getCount();
     }
 
     public boolean isMoreItemsNeeded(int lastVisibleItem) {
-        if(mMovieGridAdapter.getCount() - lastVisibleItem < MOVIEGRID_THRESHOLD)
-            return true;
-        else
-            return false;
+        return mMovieGridAdapter.getCount() - lastVisibleItem < MOVIE_GRID_THRESHOLD;
     }
 
     @Override
@@ -369,7 +355,7 @@ public class MovieGridFragment extends Fragment implements AbsListView.OnScrollL
     }
 
 
-    ContentValues[] fetchMovies(int startId) throws UnableToFetchData {
+    ContentValues[] fetchMovies(int startId) throws MovieDbApiHelper.UnableToFetchDataException {
         ContentValues[] moviesCV;
         switch (movieGrid_type) {
             case GRID_TYPE_POPULAR:
@@ -383,7 +369,7 @@ public class MovieGridFragment extends Fragment implements AbsListView.OnScrollL
                         startId, extraParameters);
                 break;
             default:
-                throw new UnableToFetchData("Invalid Type in fetchMovies()");
+                throw new MovieDbApiHelper.UnableToFetchDataException("Invalid Type in fetchMovies()");
         }
         Log.v(LOG_TAG, "Fetched Movies in " + movieGrid_type + " order from page " + movieGrid_nextPageNum);
         movieGrid_nextPageNum += 1;
@@ -469,7 +455,7 @@ public class MovieGridFragment extends Fragment implements AbsListView.OnScrollL
                         }
                     });
                     isOnline = true;
-                } catch (UnableToFetchData e) {
+                } catch (MovieDbApiHelper.UnableToFetchDataException e) {
                     Log.e(LOG_TAG, "Unable to fetch data.");
                     isOnline = false;
                     Snackbar.make(mRootView.findViewById(R.id.imagesGridView),

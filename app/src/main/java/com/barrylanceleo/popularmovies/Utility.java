@@ -10,6 +10,7 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.barrylanceleo.popularmovies.data.MovieContract;
+import com.barrylanceleo.popularmovies.fragments.MovieGridFragment;
 
 public class Utility {
 
@@ -47,26 +48,26 @@ public class Utility {
                 MovieContract.MovieDetailsEntry.COLUMN_VOTE_COUNT,
                 MovieContract.MovieDetailsEntry.COLUMN_VOTE_AVERAGE }, 10);
 
-        for(int i = 0; i < cvs.length; i++){
+        for (ContentValues cv : cvs) {
 
             MatrixCursor.RowBuilder movieRow = moviesCursor.newRow();
 
             // this order depends on the column order defined above
-            movieRow.add(cvs[i].get("_id"));
-            movieRow.add(cvs[i].get(MovieContract.MovieDetailsEntry.COLUMN_MOVIE_ID));
-            movieRow.add(cvs[i].get(MovieContract.MovieDetailsEntry.COLUMN_TITLE));
-            movieRow.add(cvs[i].get(MovieContract.MovieDetailsEntry.COLUMN_POSTER_PATH));
-            movieRow.add(cvs[i].get(MovieContract.MovieDetailsEntry.COLUMN_POSTER_URL));
-            movieRow.add(cvs[i].get(MovieContract.MovieDetailsEntry.COLUMN_ADULT));
-            movieRow.add(cvs[i].get(MovieContract.MovieDetailsEntry.COLUMN_OVERVIEW));
-            movieRow.add(cvs[i].get(MovieContract.MovieDetailsEntry.COLUMN_RELEASE_DATE));
-            movieRow.add(cvs[i].get(MovieContract.MovieDetailsEntry.COLUMN_GENRE_IDS));
-            movieRow.add(cvs[i].get(MovieContract.MovieDetailsEntry.COLUMN_LANGUAGE));
-            movieRow.add(cvs[i].get(MovieContract.MovieDetailsEntry.COLUMN_BACKDROP_PATH));
-            movieRow.add(cvs[i].get(MovieContract.MovieDetailsEntry.COLUMN_BACKDROP_URL));
-            movieRow.add(cvs[i].get(MovieContract.MovieDetailsEntry.COLUMN_POPULARITY));
-            movieRow.add(cvs[i].get(MovieContract.MovieDetailsEntry.COLUMN_VOTE_COUNT));
-            movieRow.add(cvs[i].get(MovieContract.MovieDetailsEntry.COLUMN_VOTE_AVERAGE));
+            movieRow.add(cv.get("_id"));
+            movieRow.add(cv.get(MovieContract.MovieDetailsEntry.COLUMN_MOVIE_ID));
+            movieRow.add(cv.get(MovieContract.MovieDetailsEntry.COLUMN_TITLE));
+            movieRow.add(cv.get(MovieContract.MovieDetailsEntry.COLUMN_POSTER_PATH));
+            movieRow.add(cv.get(MovieContract.MovieDetailsEntry.COLUMN_POSTER_URL));
+            movieRow.add(cv.get(MovieContract.MovieDetailsEntry.COLUMN_ADULT));
+            movieRow.add(cv.get(MovieContract.MovieDetailsEntry.COLUMN_OVERVIEW));
+            movieRow.add(cv.get(MovieContract.MovieDetailsEntry.COLUMN_RELEASE_DATE));
+            movieRow.add(cv.get(MovieContract.MovieDetailsEntry.COLUMN_GENRE_IDS));
+            movieRow.add(cv.get(MovieContract.MovieDetailsEntry.COLUMN_LANGUAGE));
+            movieRow.add(cv.get(MovieContract.MovieDetailsEntry.COLUMN_BACKDROP_PATH));
+            movieRow.add(cv.get(MovieContract.MovieDetailsEntry.COLUMN_BACKDROP_URL));
+            movieRow.add(cv.get(MovieContract.MovieDetailsEntry.COLUMN_POPULARITY));
+            movieRow.add(cv.get(MovieContract.MovieDetailsEntry.COLUMN_VOTE_COUNT));
+            movieRow.add(cv.get(MovieContract.MovieDetailsEntry.COLUMN_VOTE_AVERAGE));
 
         }
         return moviesCursor;

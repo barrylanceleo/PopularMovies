@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="com.barrylanceleo.popularmovies.ReviewFragment"
+    tools:context=".fragments.ReviewFragment"
     android:id="@+id/review_list_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -19,5 +19,15 @@
             android:dividerHeight="@dimen/card_space"
             tools:listitem="@layout/list_item_review" />
     </android.support.v4.widget.SwipeRefreshLayout>
+
+    <TextView
+        android:id="@+id/review_empty_textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:visibility="gone"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="No reviews!"/>
 
 </RelativeLayout>

@@ -2,9 +2,6 @@ package com.barrylanceleo.popularmovies;
 
 import java.util.List;
 
-/**
- * Created by barry on 2/22/16.
- */
 public class Movie {
 
     private int id;

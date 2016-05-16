@@ -3,8 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MovieGridActivity"
-    android:name="com.barrylanceleo.popularmovies.MovieGridFragment"
+    tools:context=".activities.MovieGridActivity"
+    android:name="com.barrylanceleo.popularmovies.fragments.MovieGridFragment"
     tools:layout="@layout/fragment_movie_grid"
     android:background="@color/colorBackground"/>
 

@@ -1,4 +1,4 @@
-package com.barrylanceleo.popularmovies;
+package com.barrylanceleo.popularmovies.adapters;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -9,13 +9,14 @@ import android.widget.CursorAdapter;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 
+import com.barrylanceleo.popularmovies.R;
 import com.barrylanceleo.popularmovies.data.MovieContract;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
 public class MovieGridAdapter extends CursorAdapter {
 
-    static final String LOG_TAG = MovieGridAdapter.class.getSimpleName();
+    //private static final String LOG_TAG = MovieGridAdapter.class.getSimpleName();
     Picasso mPicasso;
 
     /**

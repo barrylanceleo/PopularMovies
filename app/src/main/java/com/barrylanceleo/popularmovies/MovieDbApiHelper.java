@@ -25,9 +25,20 @@ import java.util.concurrent.ExecutionException;
 public final class MovieDbApiHelper {
 
     private static final String LOG_TAG = MovieDbApiHelper.class.getSimpleName();
-    private static final int movieCountPerPage = 20;
+    //private static final int movieCountPerPage = 20;
     private final String mApiKey;
     private static MovieDbApiHelper mInstance;
+
+    public static class UnableToFetchDataException extends Exception {
+
+        public UnableToFetchDataException(String message) {
+            super(message);
+        }
+
+        public UnableToFetchDataException(String message, Throwable throwable) {
+            super(message, throwable);
+        }
+    }
 
     private MovieDbApiHelper(String apiKey){
         mApiKey = apiKey;
@@ -40,7 +51,7 @@ public final class MovieDbApiHelper {
         return mInstance;
     }
 
-    ContentValues[] parseJsonToCv(JSONObject moviesJson, int startId) {
+    public ContentValues[] parseJsonToCv(JSONObject moviesJson, int startId) {
 
         ContentValues [] moviesCv;
         try {
@@ -103,7 +114,7 @@ public final class MovieDbApiHelper {
         return moviesCv;
     }
 
-    ContentValues[] getMovies(String sortBy, String pageNumber, int startId, Bundle extraParameters) throws UnableToFetchData {
+    public ContentValues[] getMovies(String sortBy, String pageNumber, int startId, Bundle extraParameters) throws UnableToFetchDataException {
 
         // build the URL to query
         Uri.Builder uriBuilder = new Uri.Builder();
@@ -133,12 +144,12 @@ public final class MovieDbApiHelper {
             moviesJson = (JSONObject) queryTask.get();
         } catch (CancellationException e) {
             Log.v(LOG_TAG, "Task Cancelled");
-            throw new UnableToFetchData("No internet", e);
+            throw new UnableToFetchDataException("No internet", e);
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
             Log.v(LOG_TAG, "Task Execution failed");
-            throw new UnableToFetchData("No internet", e);
+            throw new UnableToFetchDataException("No internet", e);
         }
         return parseJsonToCv(moviesJson, startId);
 
@@ -176,7 +187,7 @@ public final class MovieDbApiHelper {
     }
 
 
-    public List<JSONObject> getReviews(int movieId, int pageNum) {
+    public List<JSONObject> getReviews(int movieId, int pageNum)  throws UnableToFetchDataException {
 
         // build the URL to query
         Uri.Builder uriBuilder = new Uri.Builder();
@@ -193,7 +204,7 @@ public final class MovieDbApiHelper {
         Log.i(LOG_TAG, "Querying: " +requestString);
 
         HttpURLConnection urlConnection = null;
-        JSONObject reviewsJson = null;
+        JSONObject reviewsJson;
         try {
             URL requestUrl = new URL(requestString);
             urlConnection = (HttpURLConnection) requestUrl.openConnection();
@@ -212,13 +223,14 @@ public final class MovieDbApiHelper {
             }
             return reviewList;
         } catch (IOException e) {
-            Log.v(LOG_TAG, "Exception: No internet?");
+            Log.e(LOG_TAG, "Exception: No internet?");
+            throw new UnableToFetchDataException("No internet", e);
         } catch (JSONException e) {
-            e.printStackTrace();
+            Log.e(LOG_TAG, "Exception: Unable to parse the returned Json", e);
+            return new ArrayList<>();
         } finally {
             assert urlConnection != null;
             urlConnection.disconnect();
         }
-        return new ArrayList<>();
     }
 }
