@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -292,7 +293,7 @@ public class ImageListFragment extends Fragment {
             // build the notification
             Notification.Builder notificationBuilder = new Notification.Builder(getContext());
             notificationBuilder.setSmallIcon(R.drawable.ic_done_black_36dp)
-                    .setContentTitle("Image downloaded")
+                    .setContentTitle("Download Complete")
                     .setContentText("Touch to open")
                     .setStyle(new Notification.BigPictureStyle().bigPicture(bitmap))
                     .setContentIntent(pendingIntent);
@@ -300,8 +301,14 @@ public class ImageListFragment extends Fragment {
                     (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
             mNotificationManager.notify(0, notificationBuilder.build());
 
+            // scan so that the mediaManager picks up the new file
+            MediaScannerConnection.scanFile(getContext(),
+                    new String[] { downloadedFile.getAbsolutePath() },
+                    null,
+                    null);
+
             Snackbar.make(mImageListView,
-                    "Downloaded File " +downloadedFile.getName(),
+                    "Download Complete. Please check your notification bar.",
                     Snackbar.LENGTH_LONG).setAction("Action", null).show();
         }
     }

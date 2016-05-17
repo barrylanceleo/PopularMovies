@@ -9,6 +9,16 @@
     app:cardElevation="@dimen/elevation_regular"
     app:cardPreventCornerOverlap="false"
     app:contentPadding="0dp">
+    <ProgressBar
+        android:id="@+id/image_thumbnail_progress"
+        style="?android:attr/progressBarStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true" />
+
     <ImageView
         android:id="@+id/image_thumbnail"
         android:layout_width="match_parent"
