@@ -1,0 +1,32 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+xmlns:tools="http://schemas.android.com/tools"
+tools:context=".fragments.ImageListFragment"
+android:id="@+id/image_list_layout"
+android:layout_width="match_parent"
+android:layout_height="match_parent"
+android:background="@color/colorBackground">
+<android.support.v4.widget.SwipeRefreshLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/image_swipreRefresh"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <ListView xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/image_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:divider="@color/colorBackground"
+        android:dividerHeight="@dimen/card_space"
+        tools:listitem="@layout/list_item_image" />
+</android.support.v4.widget.SwipeRefreshLayout>
+
+<TextView
+    android:id="@+id/image_empty_textView"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_centerHorizontal="true"
+    android:layout_centerVertical="true"
+    android:visibility="gone"
+    android:textAppearance="?android:attr/textAppearanceLarge"
+    android:text="No Videos!"/>
+
+</RelativeLayout>

@@ -19,8 +19,8 @@ import org.json.JSONObject;
 
 import java.util.List;
 
-public class ReviewFragment extends Fragment {
-    //private static final String LOG_TAG = ReviewFragment.class.getSimpleName();
+public class ReviewListFragment extends Fragment {
+    //private static final String LOG_TAG = ReviewListFragment.class.getSimpleName();
 
     private static final String MOVIE_ID = "movie_id";
     private int mMovieId;
@@ -34,11 +34,11 @@ public class ReviewFragment extends Fragment {
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
      */
-    public ReviewFragment() {
+    public ReviewListFragment() {
     }
 
-    public static ReviewFragment newInstance(int movieId) {
-        ReviewFragment fragment = new ReviewFragment();
+    public static ReviewListFragment newInstance(int movieId) {
+        ReviewListFragment fragment = new ReviewListFragment();
         Bundle args = new Bundle();
         args.putInt(MOVIE_ID, movieId);
         fragment.setArguments(args);
@@ -85,7 +85,7 @@ public class ReviewFragment extends Fragment {
             public void run() {
                 try {
                     final List<JSONObject> reviewList = mMovieDbHelper.getReviews(movieId, 1);
-                    ReviewFragment.this.getActivity().runOnUiThread(new Runnable() {
+                    ReviewListFragment.this.getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             mReviewListAdapter.clear();
@@ -102,14 +102,13 @@ public class ReviewFragment extends Fragment {
     }
 
     void onRefreshCompleted(final int reviewCount) {
-        ReviewFragment.this.getActivity().runOnUiThread(new Runnable() {
+        ReviewListFragment.this.getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 if(reviewCount <= 0) {
                     // no reviews
                     mNoReviewsTextView.setVisibility(View.VISIBLE);
                     mReviewListView.setVisibility(View.GONE);
-
                     if(reviewCount < 0) {
                         // no internet
                         Snackbar.make(mNoReviewsTextView,

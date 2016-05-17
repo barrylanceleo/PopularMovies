@@ -181,7 +181,7 @@
                 android:paddingLeft="@dimen/detail_poster_padding"
                 android:paddingRight="@dimen/detail_poster_padding"
                 android:paddingBottom="@dimen/detail_poster_padding"
-                android:elevation="@dimen/design_appbar_elevation">
+                android:elevation="@dimen/elevation_regular">
 
                 <ProgressBar
                     android:id="@+id/poster_details_progress"

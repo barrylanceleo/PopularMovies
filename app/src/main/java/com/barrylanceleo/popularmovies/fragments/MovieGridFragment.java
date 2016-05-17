@@ -427,8 +427,6 @@ public class MovieGridFragment extends Fragment implements AbsListView.OnScrollL
     public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
 
         int lastVisibleItem = firstVisibleItem + visibleItemCount;
-//        Log.v(LOG_TAG, "Last Visible Item: " + lastVisibleItem);
-//        Log.v(LOG_TAG, "No. of items in dataset: " + mMovieGridAdapter.getCount());
         //add new movies if required
         if (isOnline && !getMovieGrid_type().equalsIgnoreCase(GRID_TYPE_FAVORITE)
                  && isMoreItemsNeeded(lastVisibleItem) && !isAdditionInProgress) {

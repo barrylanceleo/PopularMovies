@@ -1,6 +1,7 @@
 package com.barrylanceleo.popularmovies.activities;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.support.v4.app.TaskStackBuilder;
@@ -10,9 +11,11 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 
+import com.barrylanceleo.popularmovies.fragments.ImageListFragment;
 import com.barrylanceleo.popularmovies.fragments.MovieDetailsFragment;
 import com.barrylanceleo.popularmovies.R;
-import com.barrylanceleo.popularmovies.fragments.ReviewFragment;
+import com.barrylanceleo.popularmovies.fragments.ReviewListFragment;
+import com.barrylanceleo.popularmovies.fragments.VideoListFragment;
 
 public class MovieDetailsActivity extends AppCompatActivity implements MovieDetailsFragment.FragmentCallback {
     static final String LOG_TAG = MovieDetailsFragment.class.getSimpleName();
@@ -98,15 +101,29 @@ public class MovieDetailsActivity extends AppCompatActivity implements MovieDeta
         }
         switch (selectedItem) {
             case "photos":
+                ImageListFragment imageListFragment = ImageListFragment.newInstance(mMovie_id);
+                mFragmentLevel++;
+                setTitle("Images");
+                getSupportFragmentManager().beginTransaction()
+                        .add(R.id.movie_detail_container, imageListFragment)
+                        .addToBackStack(null)
+                        .commit();
                 break;
             case "videos":
+                VideoListFragment videoListFragment = VideoListFragment.newInstance(mMovie_id);
+                mFragmentLevel++;
+                setTitle("Videos");
+                getSupportFragmentManager().beginTransaction()
+                        .add(R.id.movie_detail_container, videoListFragment)
+                        .addToBackStack(null)
+                        .commit();
                 break;
             case "reviews":
-                ReviewFragment reviewFragment = ReviewFragment.newInstance(mMovie_id);
+                ReviewListFragment reviewListFragment = ReviewListFragment.newInstance(mMovie_id);
                 mFragmentLevel++;
                 setTitle("Reviews");
                 getSupportFragmentManager().beginTransaction()
-                        .add(R.id.movie_detail_container, reviewFragment)
+                        .add(R.id.movie_detail_container, reviewListFragment)
                         .addToBackStack(null)
                         .commit();
                 break;

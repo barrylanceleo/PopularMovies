@@ -19,5 +19,5 @@
     <!--Shared Preferences-->
     <string name="pref_sortOrder_key">Sort Order</string>
     <string name="pref_sortOrder_default">popularity.desc</string>
-
+    
 </resources>

@@ -179,8 +179,9 @@ public final class MovieDbApiHelper {
             } catch (JSONException e) {
                 e.printStackTrace();
             } finally {
-                assert urlConnection != null;
-                urlConnection.disconnect();
+                if(urlConnection != null){
+                    urlConnection.disconnect();
+                }
             }
             return moviesJson;
         }
@@ -229,8 +230,107 @@ public final class MovieDbApiHelper {
             Log.e(LOG_TAG, "Exception: Unable to parse the returned Json", e);
             return new ArrayList<>();
         } finally {
-            assert urlConnection != null;
-            urlConnection.disconnect();
+            if(urlConnection != null) {
+                urlConnection.disconnect();
+            }
+        }
+    }
+
+    public List<JSONObject> getVideos(int movieId)  throws UnableToFetchDataException {
+
+        // build the URL to query
+        Uri.Builder uriBuilder = new Uri.Builder();
+        uriBuilder.scheme("http")
+                .authority("api.themoviedb.org")
+                .appendPath("3")
+                .appendPath("movie")
+                .appendPath(Integer.toString(movieId))
+                .appendPath("videos")
+                .appendQueryParameter("api_key", this.mApiKey);
+
+        String requestString = uriBuilder.build().toString();
+        Log.i(LOG_TAG, "Querying: " +requestString);
+
+        HttpURLConnection urlConnection = null;
+        JSONObject videosJson;
+        try {
+            URL requestUrl = new URL(requestString);
+            urlConnection = (HttpURLConnection) requestUrl.openConnection();
+            BufferedReader br = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = br.readLine()) != null) {
+                sb.append(line).append("\n");
+            }
+            videosJson = new JSONObject(sb.toString());
+            br.close();
+            JSONArray reviewJsonArray = videosJson.getJSONArray("results");
+            List<JSONObject> videoList = new ArrayList<>();
+            for(int i = 0; i < reviewJsonArray.length(); i++) {
+                videoList.add(reviewJsonArray.getJSONObject(i));
+            }
+            return videoList;
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "Exception: No internet?");
+            throw new UnableToFetchDataException("No internet", e);
+        } catch (JSONException e) {
+            Log.e(LOG_TAG, "Exception: Unable to parse the returned Json", e);
+            return new ArrayList<>();
+        } finally {
+            if(urlConnection != null){
+                urlConnection.disconnect();
+            }
+        }
+    }
+
+    public List<JSONObject> getImages(int movieId)  throws UnableToFetchDataException {
+
+        // build the URL to query
+        Uri.Builder uriBuilder = new Uri.Builder();
+        uriBuilder.scheme("http")
+                .authority("api.themoviedb.org")
+                .appendPath("3")
+                .appendPath("movie")
+                .appendPath(Integer.toString(movieId))
+                .appendPath("images")
+                .appendQueryParameter("api_key", this.mApiKey);
+
+        String requestString = uriBuilder.build().toString();
+        Log.i(LOG_TAG, "Querying: " +requestString);
+
+        HttpURLConnection urlConnection = null;
+        JSONObject imagesJson;
+        try {
+            URL requestUrl = new URL(requestString);
+            urlConnection = (HttpURLConnection) requestUrl.openConnection();
+            BufferedReader br = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = br.readLine()) != null) {
+                sb.append(line).append("\n");
+            }
+            imagesJson = new JSONObject(sb.toString());
+            br.close();
+            JSONArray backdropJsonArray = imagesJson.getJSONArray("backdrops");
+            List<JSONObject> imageList = new ArrayList<>();
+            for(int i = 0; i < backdropJsonArray.length(); i++) {
+                imageList.add(backdropJsonArray.getJSONObject(i));
+            }
+            JSONArray posterJsonArray = imagesJson.getJSONArray("posters");
+            for(int i = 0; i < posterJsonArray.length(); i++) {
+                imageList.add(posterJsonArray.getJSONObject(i));
+            }
+            return imageList;
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "Exception: No internet?");
+            throw new UnableToFetchDataException("No internet", e);
+        } catch (JSONException e) {
+            Log.e(LOG_TAG, "Exception: Unable to parse the returned Json", e);
+            return new ArrayList<>();
+        } finally {
+            if(urlConnection != null) {
+                urlConnection.disconnect();
+            }
         }
     }
 }

@@ -12,9 +12,25 @@ import android.util.Log;
 import com.barrylanceleo.popularmovies.data.MovieContract;
 import com.barrylanceleo.popularmovies.fragments.MovieGridFragment;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+
 public class Utility {
 
-    static final String LOG_TAG = Utility.class.getSimpleName();
+    private static final String LOG_TAG = Utility.class.getSimpleName();
+    public static final String IMAGE_DIRECTORY = "Popular Movies";
 
     public static String getPreferredSortOrder(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
@@ -146,6 +162,46 @@ public class Utility {
             }
             Log.v(LOG_TAG, "End of DB insert");
             return null;
+        }
+    }
+
+    public static File downloadFile(String fileUrl, String filepath) throws MovieDbApiHelper.UnableToFetchDataException{
+        HttpURLConnection urlConnection = null;
+        try {
+            Log.i(LOG_TAG, "Downloading " +fileUrl +" to " +filepath);
+            // open the file to write to
+            File destinationFile = new File(filepath);
+            // create the file if it doesn't exist, if the parent doesn't exist return null
+            if (!destinationFile.exists()) {
+                if(!destinationFile.getParentFile().isDirectory()) {
+                    Log.e(LOG_TAG, "Parent directory doesn't exist");
+                    return null;
+                }
+                if(!destinationFile.createNewFile()) {
+                    Log.e(LOG_TAG, "Unable to create new file");
+                    return null;
+                }
+            }
+            FileOutputStream fileOutputStream = new FileOutputStream(filepath);
+
+            // open a http connection and fetch the file
+            URL requestUrl = new URL(fileUrl);
+            urlConnection = (HttpURLConnection) requestUrl.openConnection();
+            BufferedInputStream urlInputStream = new BufferedInputStream(urlConnection.getInputStream());
+            final int BUFFER_SIZE = 1024;
+            byte buffer[] = new byte[BUFFER_SIZE];
+            int read_size;
+            while ((read_size = urlInputStream.read(buffer, 0, BUFFER_SIZE)) != -1) {
+                fileOutputStream.write(buffer, 0, read_size);
+            }
+            return destinationFile;
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "Exception: No internet?", e);
+            throw new MovieDbApiHelper.UnableToFetchDataException("No internet", e);
+        } finally {
+            if(urlConnection != null) {
+                urlConnection.disconnect();
+            }
         }
     }
 }
