@@ -82,7 +82,6 @@ public class MovieGridAdapter extends CursorAdapter {
 
         //Log.v(LOG_TAG, "Loading Cursor:" + DatabaseUtils.dumpCurrentRowToString(cursor));
 
-
         mPicasso.load(cursor.getString(cursor.getColumnIndex(MovieContract.MovieDetailsEntry.COLUMN_POSTER_URL)))
                 .into(viewHolder.posterView,
                         new ImageLoadedCallback(viewHolder.posterView, viewHolder.progressBar));

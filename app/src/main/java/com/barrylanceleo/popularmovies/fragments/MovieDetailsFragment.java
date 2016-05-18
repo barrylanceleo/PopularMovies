@@ -28,9 +28,10 @@ import com.squareup.picasso.Picasso;
 public class MovieDetailsFragment extends Fragment {
 
     //static final String LOG_TAG = MovieDetailsFragment.class.getSimpleName();
+    private static final String MOVIE_ID = "movie_id";
+    private int mMovieId;
 
     private View mRootView;
-    private int mMovie_id;
     private ProgressBar mBackDropProgressBar;
     private ImageView mBackdropImageView;
     private ImageView mFavImageView;
@@ -55,24 +56,36 @@ public class MovieDetailsFragment extends Fragment {
         /**
          * FragmentCallback for when an item has been selected.
          */
-        void onItemSelected(Bundle selectedItemDetails);
+        void onButtonSelected(Bundle selectedItemDetails);
     }
 
     public MovieDetailsFragment() {
         // Required empty public constructor
     }
 
+    public static MovieDetailsFragment newInstance(int movieId) {
+        MovieDetailsFragment fragment = new MovieDetailsFragment();
+        Bundle args = new Bundle();
+        args.putInt(MOVIE_ID, movieId);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            mMovieId = getArguments().getInt(MOVIE_ID);
+        }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
-        mMovie_id = getArguments().getInt("movie_id");
-
+        if(mMovieId == -1) {
+            // no movie has been selected yet
+            return inflater.inflate(R.layout.fragment_movie_details_empty, container, false);
+        }
         // Inflate the layout for this fragment
         mRootView =  inflater.inflate(R.layout.fragment_movie_details, container, false);
 
@@ -111,19 +124,24 @@ public class MovieDetailsFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+        if(mMovieId == -1) {
+            // no movie has been selected yet
+            return;
+        }
+
         mBackDropProgressBar.setVisibility(View.VISIBLE);
         mPosterProgressBar.setVisibility(View.VISIBLE);
 
         // query the details from the database
         Cursor movieCursor = getContext().getContentResolver().query(
-                MovieContract.MovieDetailsEntry.buildMovieDetailsUri(mMovie_id),
+                MovieContract.MovieDetailsEntry.buildMovieDetailsUri(mMovieId),
                 null,
                 null,
                 null,
                 null);
 
         //Log.v(LOG_TAG, "Loading Cursor:" + DatabaseUtils.dumpCursorToString(movieCursor));
-        if(movieCursor == null) {
+        if(movieCursor == null || movieCursor.getCount() == 0) {
             return;
         }
 
@@ -150,7 +168,7 @@ public class MovieDetailsFragment extends Fragment {
 
         // setup the fav button, check if its a favorite movie
         Cursor favCursor = getContext().getContentResolver().query(
-                MovieContract.FavoriteMovieEntry.buildFavoriteMovieUri(mMovie_id),
+                MovieContract.FavoriteMovieEntry.buildFavoriteMovieUri(mMovieId),
                 null,
                 null,
                 null,
@@ -180,7 +198,7 @@ public class MovieDetailsFragment extends Fragment {
                             getContext().getContentResolver().delete(
                                     MovieContract.FavoriteMovieEntry.CONTENT_URI,
                                     MovieContract.FavoriteMovieEntry.COLUMN_MOVIE_ID +" = ?",
-                                    new String[]{Integer.toString(mMovie_id)}
+                                    new String[]{Integer.toString(mMovieId)}
                             );
                             return null;
                         }
@@ -198,7 +216,7 @@ public class MovieDetailsFragment extends Fragment {
                         @Override
                         protected Void doInBackground(Integer... params) {
                             ContentValues favMovieCV = new ContentValues();
-                            favMovieCV.put(MovieContract.FavoriteMovieEntry.COLUMN_MOVIE_ID, mMovie_id);
+                            favMovieCV.put(MovieContract.FavoriteMovieEntry.COLUMN_MOVIE_ID, mMovieId);
                             getContext().getContentResolver().insert(
                                     MovieContract.FavoriteMovieEntry.CONTENT_URI,
                                     favMovieCV
@@ -249,30 +267,33 @@ public class MovieDetailsFragment extends Fragment {
         mPhotosButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // call the onItemSelected of the containing activity
+                // call the onMovieSelected of the containing activity
                 Bundle selectedItemDetails = new Bundle();
                 selectedItemDetails.putString("button", "photos");
-                ((MovieDetailsFragment.FragmentCallback) getActivity()).onItemSelected(selectedItemDetails);
+                selectedItemDetails.putInt(MOVIE_ID, mMovieId);
+                ((MovieDetailsFragment.FragmentCallback) getActivity()).onButtonSelected(selectedItemDetails);
             }
         });
 
         mVideosButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // call the onItemSelected of the containing activity
+                // call the onMovieSelected of the containing activity
                 Bundle selectedItemDetails = new Bundle();
                 selectedItemDetails.putString("button", "videos");
-                ((MovieDetailsFragment.FragmentCallback) getActivity()).onItemSelected(selectedItemDetails);
+                selectedItemDetails.putInt(MOVIE_ID, mMovieId);
+                ((MovieDetailsFragment.FragmentCallback) getActivity()).onButtonSelected(selectedItemDetails);
             }
         });
 
         mReviewsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // call the onItemSelected of the containing activity
+                // call the onMovieSelected of the containing activity
                 Bundle selectedItemDetails = new Bundle();
                 selectedItemDetails.putString("button", "reviews");
-                ((MovieDetailsFragment.FragmentCallback) getActivity()).onItemSelected(selectedItemDetails);
+                selectedItemDetails.putInt(MOVIE_ID, mMovieId);
+                ((MovieDetailsFragment.FragmentCallback) getActivity()).onButtonSelected(selectedItemDetails);
             }
         });
 

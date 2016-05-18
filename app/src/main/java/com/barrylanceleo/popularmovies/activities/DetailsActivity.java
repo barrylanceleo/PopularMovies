@@ -1,7 +1,6 @@
 package com.barrylanceleo.popularmovies.activities;
 
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.support.v4.app.TaskStackBuilder;
@@ -17,10 +16,18 @@ import com.barrylanceleo.popularmovies.R;
 import com.barrylanceleo.popularmovies.fragments.ReviewListFragment;
 import com.barrylanceleo.popularmovies.fragments.VideoListFragment;
 
-public class MovieDetailsActivity extends AppCompatActivity implements MovieDetailsFragment.FragmentCallback {
+public class DetailsActivity extends AppCompatActivity implements MovieDetailsFragment.FragmentCallback {
     static final String LOG_TAG = MovieDetailsFragment.class.getSimpleName();
-    private int mMovie_id = 0;
-    private int mFragmentLevel = 0;
+    private int mMovieId;
+    private int mFragmentLevel;
+
+    private static final String MOVIE_ID = "movie_id";
+
+    // tags for fragments
+    private final static String DETAIL_FRAGMENT_TAG = "DFTAG";
+    private final static String IMAGE_FRAGMENT_TAG = "IFTAG";
+    private final static String VIDEO_FRAGMENT_TAG = "VFTAG";
+    private final static String REVIEW_FRAGMENT_TAG = "RFTAG";
 
     /**
      * This hook is called whenever an item in your options menu is selected.
@@ -44,6 +51,15 @@ public class MovieDetailsActivity extends AppCompatActivity implements MovieDeta
         switch (item.getItemId()) {
             case android.R.id.home:
                 Log.i(LOG_TAG, "Home button clicked");
+                mFragmentLevel--;
+                // move to the previous fragment
+                if(mFragmentLevel == 1) {
+                    setTitle("About the movie");
+                    getSupportFragmentManager().popBackStackImmediate();
+                    return true;
+                }
+
+                // else move to the home screen
                 Intent upIntent = NavUtils.getParentActivityIntent(this);
                 // if the parent activity needs to be recreated, create it
                 // otherwise bring back the already existing activity
@@ -71,7 +87,7 @@ public class MovieDetailsActivity extends AppCompatActivity implements MovieDeta
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_movie_details);
+        setContentView(R.layout.activity_details);
 
         Toolbar myToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(myToolbar);
@@ -82,49 +98,48 @@ public class MovieDetailsActivity extends AppCompatActivity implements MovieDeta
 
         // get the extras from Intent
         Intent mIntent = getIntent();
-        Bundle movieDetailsBundle = mIntent.getExtras();
-        mMovie_id = movieDetailsBundle.getInt("movie_id");
-        MovieDetailsFragment movieDetailsFragment = new MovieDetailsFragment();
-        movieDetailsFragment.setArguments(movieDetailsBundle);
+        mMovieId = mIntent.getIntExtra(MOVIE_ID, -1);
+        MovieDetailsFragment movieDetailsFragment = MovieDetailsFragment.newInstance(mMovieId);
         mFragmentLevel++;
         setTitle("About the movie");
         getSupportFragmentManager().beginTransaction()
-                .add(R.id.movie_detail_container, movieDetailsFragment)
+                .add(R.id.movie_detail_container, movieDetailsFragment, DETAIL_FRAGMENT_TAG)
                 .commit();
     }
 
     @Override
-    public void onItemSelected(Bundle selectedItemDetails) {
-        String selectedItem = selectedItemDetails.getString("button");
+    public void onButtonSelected(Bundle selectedButtonDetails) {
+        String selectedItem = selectedButtonDetails.getString("button");
+        int currentMovieId = selectedButtonDetails.getInt(MOVIE_ID);
         if(selectedItem == null) {
             return;
         }
         switch (selectedItem) {
             case "photos":
-                ImageListFragment imageListFragment = ImageListFragment.newInstance(mMovie_id);
+                ImageListFragment imageListFragment = ImageListFragment.newInstance(currentMovieId);
                 mFragmentLevel++;
-                setTitle("Images");
+                setTitle("Photos");
                 getSupportFragmentManager().beginTransaction()
-                        .add(R.id.movie_detail_container, imageListFragment)
                         .addToBackStack(null)
+                        .replace(R.id.movie_detail_container, imageListFragment, IMAGE_FRAGMENT_TAG)
                         .commit();
                 break;
             case "videos":
-                VideoListFragment videoListFragment = VideoListFragment.newInstance(mMovie_id);
+                VideoListFragment videoListFragment = VideoListFragment.newInstance(currentMovieId);
                 mFragmentLevel++;
                 setTitle("Videos");
                 getSupportFragmentManager().beginTransaction()
-                        .add(R.id.movie_detail_container, videoListFragment)
                         .addToBackStack(null)
+                        .replace(R.id.movie_detail_container, videoListFragment, VIDEO_FRAGMENT_TAG)
                         .commit();
                 break;
             case "reviews":
-                ReviewListFragment reviewListFragment = ReviewListFragment.newInstance(mMovie_id);
+                ReviewListFragment reviewListFragment = ReviewListFragment.newInstance(currentMovieId);
                 mFragmentLevel++;
                 setTitle("Reviews");
                 getSupportFragmentManager().beginTransaction()
-                        .add(R.id.movie_detail_container, reviewListFragment)
                         .addToBackStack(null)
+                        .replace(R.id.movie_detail_container, reviewListFragment, REVIEW_FRAGMENT_TAG)
                         .commit();
                 break;
             default:
