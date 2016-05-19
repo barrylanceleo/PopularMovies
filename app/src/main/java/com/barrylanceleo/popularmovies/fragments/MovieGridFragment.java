@@ -55,8 +55,8 @@ public class MovieGridFragment extends Fragment implements AbsListView.OnScrollL
 
 
     // Grid Types
-    public static final String GRID_TYPE_POPULAR = "popularity.desc";
-    public static final String GRID_TYPE_RATING = "vote_average.desc";
+    public static final String GRID_TYPE_POPULAR = "popular";
+    public static final String GRID_TYPE_RATING = "top_rated";
     public static final String GRID_TYPE_FAVORITE = "favorites";
     private static final String [] GRID_TYPES = new String[]{"Most Popular",
             "Top Rated", "Favorites"};
@@ -127,6 +127,10 @@ public class MovieGridFragment extends Fragment implements AbsListView.OnScrollL
         super.onActivityCreated(savedInstanceState);
         mContext = getContext();
         movieGrid_type = Utility.getPreferredSortOrder(mContext);
+        if(!movieGrid_type.equals(GRID_TYPE_POPULAR) && !movieGrid_type.equals(GRID_TYPE_RATING) &&
+                !movieGrid_type.equals(GRID_TYPE_FAVORITE)) {
+            movieGrid_type = GRID_TYPE_POPULAR;
+        }
         mMovieDbHelper = MovieDbApiHelper.getInstance(mContext.getResources().getString(R.string.api_key));
 
         updateActivityTitle();
@@ -141,7 +145,6 @@ public class MovieGridFragment extends Fragment implements AbsListView.OnScrollL
         }
         // load data
         OnRefresh();
-        Log.i(LOG_TAG, "onActivityCreated( completed)");
     }
 
     @Override

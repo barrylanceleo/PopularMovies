@@ -114,19 +114,17 @@ public final class MovieDbApiHelper {
         return moviesCv;
     }
 
-    public ContentValues[] getMovies(String sortBy, String pageNumber, int startId, Bundle extraParameters) throws UnableToFetchDataException {
+    public ContentValues[] getMovies(String type, String pageNumber, int startId, Bundle extraParameters) throws UnableToFetchDataException {
 
         // build the URL to query
         Uri.Builder uriBuilder = new Uri.Builder();
         uriBuilder.scheme("http")
                 .authority("api.themoviedb.org")
                 .appendPath("3")
-                .appendPath("discover")
                 .appendPath("movie")
-                .appendQueryParameter("sort_by", sortBy)
+                .appendPath(type)
                 .appendQueryParameter("page", pageNumber)
                 .appendQueryParameter("api_key", this.mApiKey);
-        // .fragment("section-name"); // to add #section-name to the url
 
         if (extraParameters != null && !extraParameters.isEmpty()) {
             for (String key : extraParameters.keySet()) {

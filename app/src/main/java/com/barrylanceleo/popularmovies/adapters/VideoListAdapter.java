@@ -3,6 +3,7 @@ package com.barrylanceleo.popularmovies.adapters;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.support.design.widget.Snackbar;
 import android.support.v7.widget.CardView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -54,7 +55,7 @@ public class VideoListAdapter extends ArrayAdapter<JSONObject> {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        ViewHolder viewHolder;
+        final ViewHolder viewHolder;
         if(convertView == null) {
             convertView = LayoutInflater.from(getContext()).inflate(mResourceId,
                     parent, false);
@@ -86,7 +87,23 @@ public class VideoListAdapter extends ArrayAdapter<JSONObject> {
                         if(site.equalsIgnoreCase("youtube")) {
                             String youtubeLink = "http://www.youtube.com/watch?v=" +key;
                             Log.i(LOG_TAG, "Opening: " +youtubeLink);
-                            getContext().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(youtubeLink)));
+
+                            // Create an intent
+                            Intent openVideoIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(youtubeLink));
+                            // check if the implicit intent will resolve to an application
+                            if (openVideoIntent.resolveActivity(getContext().getPackageManager()) != null) {
+                                getContext().startActivity(openVideoIntent);
+                            }
+                            else {
+                                Snackbar.make(viewHolder.thumbnailImageView,
+                                        "No app found to play the video.",
+                                        Snackbar.LENGTH_LONG).setAction("Action", null).show();
+                            }
+                        }
+                        else {
+                            Snackbar.make(viewHolder.thumbnailImageView,
+                                    "Unsupported video site.",
+                                    Snackbar.LENGTH_LONG).setAction("Action", null).show();
                         }
                     }
                     catch (JSONException e) {
