@@ -1,33 +1,26 @@
 package com.barrylanceleo.popularmovies.fragments;
 
-import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.barrylanceleo.popularmovies.MovieDbApiHelper;
 import com.barrylanceleo.popularmovies.R;
-import com.barrylanceleo.popularmovies.adapters.ReviewListAdapter;
 import com.barrylanceleo.popularmovies.adapters.VideoListAdapter;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.AbstractList;
 import java.util.List;
 
 public class VideoListFragment extends Fragment {
-    private static final String LOG_TAG = VideoListFragment.class.getSimpleName();
+    //private static final String LOG_TAG = VideoListFragment.class.getSimpleName();
 
     private static final String MOVIE_ID = "movie_id";
 
@@ -83,7 +76,7 @@ public class VideoListFragment extends Fragment {
         refreshVideos(mMovieId);
     }
 
-    void refreshVideos(final int movieId) {
+    private void refreshVideos(final int movieId) {
         mVideoSwipeRefreshLayout.setRefreshing(true);
         new Thread(new Runnable() {
             @Override
@@ -106,7 +99,7 @@ public class VideoListFragment extends Fragment {
         }).start();
     }
 
-    void onRefreshCompleted(final int videoCount) {
+    private void onRefreshCompleted(final int videoCount) {
         VideoListFragment.this.getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {

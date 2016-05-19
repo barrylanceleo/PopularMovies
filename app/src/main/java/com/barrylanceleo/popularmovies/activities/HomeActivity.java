@@ -45,7 +45,6 @@ public class HomeActivity extends AppCompatActivity implements MovieGridFragment
             }
         }
         else {
-            Log.e(LOG_TAG, "One pane view");
             mTwoPane = false;
         }
     }
@@ -128,7 +127,6 @@ public class HomeActivity extends AppCompatActivity implements MovieGridFragment
                         .commit();
                 break;
             default:
-                return;
         }
     }
 }

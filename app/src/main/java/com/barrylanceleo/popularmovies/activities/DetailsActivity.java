@@ -17,7 +17,7 @@ import com.barrylanceleo.popularmovies.fragments.ReviewListFragment;
 import com.barrylanceleo.popularmovies.fragments.VideoListFragment;
 
 public class DetailsActivity extends AppCompatActivity implements MovieDetailsFragment.FragmentCallback {
-    static final String LOG_TAG = MovieDetailsFragment.class.getSimpleName();
+    private static final String LOG_TAG = MovieDetailsFragment.class.getSimpleName();
     private int mMovieId;
     private int mFragmentLevel;
 
@@ -28,6 +28,9 @@ public class DetailsActivity extends AppCompatActivity implements MovieDetailsFr
     private final static String IMAGE_FRAGMENT_TAG = "IFTAG";
     private final static String VIDEO_FRAGMENT_TAG = "VFTAG";
     private final static String REVIEW_FRAGMENT_TAG = "RFTAG";
+
+    // tags to save state
+    private final static String FRAGMENT_LEVEL_TAG = "FLTAG";
 
     /**
      * This hook is called whenever an item in your options menu is selected.
@@ -95,16 +98,18 @@ public class DetailsActivity extends AppCompatActivity implements MovieDetailsFr
 
         if (actionBar != null)
             actionBar.setDisplayHomeAsUpEnabled(true);
-
         // get the extras from Intent
         Intent mIntent = getIntent();
         mMovieId = mIntent.getIntExtra(MOVIE_ID, -1);
-        MovieDetailsFragment movieDetailsFragment = MovieDetailsFragment.newInstance(mMovieId);
-        mFragmentLevel++;
-        setTitle("About the movie");
-        getSupportFragmentManager().beginTransaction()
-                .add(R.id.movie_detail_container, movieDetailsFragment, DETAIL_FRAGMENT_TAG)
-                .commit();
+
+        if(savedInstanceState == null) {
+            MovieDetailsFragment movieDetailsFragment = MovieDetailsFragment.newInstance(mMovieId);
+            mFragmentLevel++;
+            setTitle("About the movie");
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.movie_detail_container, movieDetailsFragment, DETAIL_FRAGMENT_TAG)
+                    .commit();
+        }
     }
 
     @Override
@@ -143,7 +148,20 @@ public class DetailsActivity extends AppCompatActivity implements MovieDetailsFr
                         .commit();
                 break;
             default:
-                return;
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt(FRAGMENT_LEVEL_TAG, mFragmentLevel);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        if(savedInstanceState != null) {
+            mFragmentLevel = savedInstanceState.getInt(FRAGMENT_LEVEL_TAG);
         }
     }
 }

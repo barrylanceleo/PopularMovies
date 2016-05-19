@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Popular Movies</string>
     <!--please add the API Key and uncomment the next line-->
-    <string name="api_key">aacb1a1cf2f47a111a2c94d5e47c17c5</string>
+    <!--<string name="api_key"></string>-->
     <string name="title_activity_movie_details">MovieDetails</string>
 
     <string name="fetch_data_fail_message">Unable to fetch data.\nPlease check your internet connection.

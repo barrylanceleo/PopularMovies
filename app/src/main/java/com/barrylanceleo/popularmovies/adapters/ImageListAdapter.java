@@ -1,7 +1,6 @@
 package com.barrylanceleo.popularmovies.adapters;
 
 import android.content.Context;
-import android.support.v7.widget.CardView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -58,13 +57,11 @@ public class ImageListAdapter extends ArrayAdapter<JSONObject> {
     /**
      * Cache of the children views for a member item.
      */
-    public static class ViewHolder {
-        public final CardView thumbnailCard;
-        public final ImageView thumbnailImageView;
-        public final ProgressBar progressBar;
+    private static class ViewHolder {
+        private final ImageView thumbnailImageView;
+        private final ProgressBar progressBar;
 
-        public ViewHolder(View view) {
-            thumbnailCard = (CardView) view.findViewById(R.id.image_thumbnail_card_view);
+        private ViewHolder(View view) {
             thumbnailImageView = (ImageView) view.findViewById(R.id.image_thumbnail);
             progressBar = (ProgressBar) view.findViewById(R.id.image_thumbnail_progress);
         }

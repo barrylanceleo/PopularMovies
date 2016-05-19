@@ -4,7 +4,7 @@
     android:id="@+id/image_thumbnail_card_view"
     android:layout_width="match_parent"
     android:layout_height="@dimen/video_list_height"
-    android:background="@color/colorCardBackground"
+    android:background="@drawable/touch_selector"
     app:cardCornerRadius="2dp"
     app:cardElevation="@dimen/elevation_regular"
     app:cardPreventCornerOverlap="false"

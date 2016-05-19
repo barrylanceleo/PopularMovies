@@ -16,12 +16,12 @@ public class MovieProvider extends ContentProvider {
     private static final UriMatcher sUriMatcher = buildUriMatcher();
     private MovieDbHelper mOpenHelper;
 
-    static final int MOVIE_DETAILS = 100;
-    static final int MOVIE_DETAILS_WITH_ID = 101;
-    static final int POPULAR_MOVIES = 200;
-    static final int RATING_MOVIES = 300;
-    static final int FAVORITE_MOVIES = 400;
-    static final int FAVORITE_MOVIE_WITH_ID = 401;
+    private static final int MOVIE_DETAILS = 100;
+    private static final int MOVIE_DETAILS_WITH_ID = 101;
+    private static final int POPULAR_MOVIES = 200;
+    private static final int RATING_MOVIES = 300;
+    private static final int FAVORITE_MOVIES = 400;
+    private static final int FAVORITE_MOVIE_WITH_ID = 401;
 
     // query builders to get the details of popular, rating and favorite movie_ids
     private static final SQLiteQueryBuilder sPopularMovieDetailsQueryBuilder;
@@ -72,7 +72,7 @@ public class MovieProvider extends ContentProvider {
     }
 
 
-    static UriMatcher buildUriMatcher() {
+    private static UriMatcher buildUriMatcher() {
         // I know what you're thinking.  Why create a UriMatcher when you can use regular
         // expressions instead?  Because you're not crazy, that's why.
 

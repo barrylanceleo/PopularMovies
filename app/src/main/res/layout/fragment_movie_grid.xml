@@ -17,10 +17,13 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:columnWidth="@dimen/grid_poster_width"
+            android:horizontalSpacing="@dimen/grid_poster_padding"
+            android:verticalSpacing="@dimen/grid_poster_padding"
             android:numColumns="auto_fit"
             android:stretchMode="columnWidth"
             android:gravity="center"
-            android:backgroundTint="#a3a3a3" />
+            tools:listitem="@layout/grid_item_movie"
+            style="@style/GridItemStyle"/>
 
     </android.support.v4.widget.SwipeRefreshLayout>
 

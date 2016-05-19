@@ -78,7 +78,7 @@ public class ReviewListFragment extends Fragment {
         refreshReviews(mMovieId);
     }
 
-    void refreshReviews(final int movieId) {
+    private void refreshReviews(final int movieId) {
         mReviewSwipeRefreshLayout.setRefreshing(true);
         new Thread(new Runnable() {
             @Override
@@ -101,7 +101,7 @@ public class ReviewListFragment extends Fragment {
         }).start();
     }
 
-    void onRefreshCompleted(final int reviewCount) {
+    private void onRefreshCompleted(final int reviewCount) {
         ReviewListFragment.this.getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {

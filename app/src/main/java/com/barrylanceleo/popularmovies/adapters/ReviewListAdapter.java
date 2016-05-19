@@ -16,9 +16,9 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 
 public class ReviewListAdapter extends ArrayAdapter<JSONObject> {
-    static final String LOG_TAG = ReviewListAdapter.class.getSimpleName();
+    private static final String LOG_TAG = ReviewListAdapter.class.getSimpleName();
 
-    int mResourceId;
+    private int mResourceId;
     public ReviewListAdapter(Context context, int resourceId) {
         super(context, 0, new ArrayList<JSONObject>());
         mResourceId = resourceId;
@@ -27,11 +27,11 @@ public class ReviewListAdapter extends ArrayAdapter<JSONObject> {
     /**
      * Cache of the children views for a member item.
      */
-    public static class ViewHolder {
-        public final TextView authorTextView;
-        public final TextView contentTextView;
+    private static class ViewHolder {
+        private final TextView authorTextView;
+        private final TextView contentTextView;
 
-        public ViewHolder(View view) {
+        private ViewHolder(View view) {
             authorTextView = (TextView) view.findViewById(R.id.review_author);
             contentTextView = (TextView) view.findViewById(R.id.review_content);
         }

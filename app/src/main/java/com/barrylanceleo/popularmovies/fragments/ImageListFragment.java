@@ -14,6 +14,7 @@ import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
@@ -26,7 +27,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.MimeTypeMap;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -38,12 +38,9 @@ import com.barrylanceleo.popularmovies.R;
 import com.barrylanceleo.popularmovies.Utility;
 import com.barrylanceleo.popularmovies.adapters.ImageListAdapter;
 import com.squareup.picasso.Picasso;
-
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 
 public class ImageListFragment extends Fragment {
@@ -58,9 +55,9 @@ public class ImageListFragment extends Fragment {
     private MovieDbApiHelper mMovieDbHelper;
 
     // image download queue, only one item needs to be queue
-    boolean mIsDownloadPending = false;
-    String mImageUrlToDownload;
-    String mImageNameToDownload;
+    private boolean mIsDownloadPending = false;
+    private String mImageUrlToDownload;
+    private String mImageNameToDownload;
 
 
     public ImageListFragment() {
@@ -134,6 +131,7 @@ public class ImageListFragment extends Fragment {
                     imageAlertBuilder.setNeutralButton("Save to phone", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
                             try {
                                 String imageLink = "http://image.tmdb.org/t/p/original" +imageJson.getString("file_path");
                                 String fileName = imageJson.getString("file_path").substring(1);
@@ -157,7 +155,7 @@ public class ImageListFragment extends Fragment {
         refreshImages(mMovieId);
     }
 
-    void refreshImages(final int movieId) {
+    private void refreshImages(final int movieId) {
         mImageSwipeRefreshLayout.setRefreshing(true);
         new Thread(new Runnable() {
             @Override
@@ -180,7 +178,7 @@ public class ImageListFragment extends Fragment {
         }).start();
     }
 
-    void onRefreshCompleted(final int imageCount) {
+    private void onRefreshCompleted(final int imageCount) {
         ImageListFragment.this.getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -205,7 +203,7 @@ public class ImageListFragment extends Fragment {
         });
     }
 
-    void OnImageDownloadStart(final String imageUrl, final String imageName) {
+    private void OnImageDownloadStart(final String imageUrl, final String imageName) {
 
         // check if we have permission to write to external storage
         // if we do not have permission, queue the download and request permission
@@ -274,7 +272,7 @@ public class ImageListFragment extends Fragment {
         }).start();
     }
 
-    void onDownloadComplete(File downloadedFile) {
+    private void onDownloadComplete(File downloadedFile) {
         if(downloadedFile == null) {
             Snackbar.make(mImageListView,
                     "Download Failed. No Internet.",
@@ -315,7 +313,7 @@ public class ImageListFragment extends Fragment {
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
+                                           @NonNull String permissions[], @NonNull int[] grantResults) {
         switch (requestCode) {
             case 0: {
                 // If request is cancelled, the result arrays are empty.
@@ -329,8 +327,11 @@ public class ImageListFragment extends Fragment {
 
                 } else {
                     // permission denied
+                    // show a snack bar about the permission required
+                    Snackbar.make(mImageListView,
+                            "Storage access is required to save image to phone.",
+                            Snackbar.LENGTH_LONG).setAction("Action", null).show();
                 }
-                return;
             }
         }
     }

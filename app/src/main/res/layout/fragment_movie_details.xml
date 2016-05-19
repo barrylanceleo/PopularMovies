@@ -24,7 +24,7 @@
 
             <ImageView
                 android:id="@+id/backdropImageViewDetails"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="@dimen/backdrop_layout_height"
                 android:layout_centerHorizontal="true"
                 android:layout_centerVertical="true"

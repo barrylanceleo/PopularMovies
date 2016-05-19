@@ -10,7 +10,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.barrylanceleo.popularmovies.R;
@@ -34,16 +33,16 @@ public class VideoListAdapter extends ArrayAdapter<JSONObject> {
     /**
      * Cache of the children views for a member item.
      */
-    public static class ViewHolder {
-        public final CardView thumbnailCard;
-        public final ImageView thumbnailImageView;
-        public final TextView nameTextView;
-        public final TextView typeTextView;
-        public final TextView resolutionTextView;
-        public final TextView siteTextView;
+    private static class ViewHolder {
+        private final CardView thumbnailCard;
+        private final ImageView thumbnailImageView;
+        private final TextView nameTextView;
+        private final TextView typeTextView;
+        private final TextView resolutionTextView;
+        private final TextView siteTextView;
 
 
-        public ViewHolder(View view) {
+        private ViewHolder(View view) {
             thumbnailCard = (CardView) view.findViewById(R.id.video_thumbnail_card_view);
             thumbnailImageView = (ImageView) view.findViewById(R.id.video_thumbnail);
             nameTextView = (TextView) view.findViewById(R.id.video_name);

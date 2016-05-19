@@ -1,15 +1,12 @@
 package com.barrylanceleo.popularmovies.fragments;
 
-import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.res.Configuration;
 import android.database.Cursor;
 import android.database.MergeCursor;
 import android.os.Bundle;
 import android.os.Looper;
-import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
@@ -35,8 +32,8 @@ import com.barrylanceleo.popularmovies.data.MovieContract;
 
 public class MovieGridFragment extends Fragment implements AbsListView.OnScrollListener, AdapterView.OnItemClickListener{
 
-    static final String LOG_TAG = MovieGridFragment.class.getSimpleName();
-    private final static String GRID_POSITION= "grid_position";
+    private static final String LOG_TAG = MovieGridFragment.class.getSimpleName();
+    private final static String GRID_STATE = "grid_state";
     private final static String NEXT_PAGE_NUM = "next_page_num";
 
     private Context mContext;
@@ -50,9 +47,6 @@ public class MovieGridFragment extends Fragment implements AbsListView.OnScrollL
     private GridView mMoviesGridView;
     private MovieDbApiHelper mMovieDbHelper;
 
-    // keep track of the internet connectivity
-    private boolean isOnline = true;
-
     // keep track of movie addition to the grid
     private boolean isAdditionInProgress = true;
 
@@ -64,14 +58,14 @@ public class MovieGridFragment extends Fragment implements AbsListView.OnScrollL
     public static final String GRID_TYPE_POPULAR = "popularity.desc";
     public static final String GRID_TYPE_RATING = "vote_average.desc";
     public static final String GRID_TYPE_FAVORITE = "favorites";
-    public static final String [] GRID_TYPES = new String[]{"Most Popular",
+    private static final String [] GRID_TYPES = new String[]{"Most Popular",
             "Top Rated", "Favorites"};
 
-    public String getMovieGrid_type() {
+    private String getMovieGrid_type() {
         return movieGrid_type;
     }
 
-    public void setMovieGrid_type(String movieGrid_type) {
+    private void setMovieGrid_type(String movieGrid_type) {
         Utility.setPreferredSortOrder(mContext, movieGrid_type);
         this.movieGrid_type = movieGrid_type;
     }
@@ -131,18 +125,18 @@ public class MovieGridFragment extends Fragment implements AbsListView.OnScrollL
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        //create a grid manager which creates a grid view and implements its listeners and handles data
         mContext = getContext();
         movieGrid_type = Utility.getPreferredSortOrder(mContext);
         mMovieDbHelper = MovieDbApiHelper.getInstance(mContext.getResources().getString(R.string.api_key));
+
+        updateActivityTitle();
+
+        //create a grid manager which creates a grid view and implements its listeners and handles data
         initializeMoviesGrid();
         if(savedInstanceState != null){
             loadDataFromDatabase();
-            int gridPosition = savedInstanceState.getInt(GRID_POSITION);;
-            Log.i(LOG_TAG, "Restoring grid to position: " +gridPosition);
-            mMoviesGridView.setSelection(gridPosition);
+            mMoviesGridView.onRestoreInstanceState(savedInstanceState.getParcelable(GRID_STATE));
             isAdditionInProgress = false;
-            Log.i(LOG_TAG, "onActivityCreated( completed)");
             return;
         }
         // load data
@@ -155,27 +149,11 @@ public class MovieGridFragment extends Fragment implements AbsListView.OnScrollL
         super.onSaveInstanceState(outState);
         // save the next page to be fetched
         outState.putInt(NEXT_PAGE_NUM, movieGrid_nextPageNum);
-        // save the grid view's position
-        Log.i(LOG_TAG, "Saving Position: " +mMoviesGridView.getFirstVisiblePosition());
-        outState.putInt(GRID_POSITION, mMoviesGridView.getFirstVisiblePosition());
+        // save the state of the grid
+        outState.putParcelable(GRID_STATE, mMoviesGridView.onSaveInstanceState());
     }
 
-
-
-    // create view and set up its listeners and load data from Database
-    void initializeMoviesGrid() {
-        mMovieGridAdapter = new MovieGridAdapter(mContext, null, 0);
-        mMoviesGridView.setAdapter(mMovieGridAdapter);
-        mMoviesGridView.setOnItemClickListener(this);
-        mMoviesGridView.setOnScrollListener(this);
-    }
-
-    public void OnRefresh() {
-        Log.i(LOG_TAG, "Refreshing............");
-        if(isRefreshing) {
-            return;
-        }
-        isRefreshing = true;
+    private void updateActivityTitle() {
         // set up the activity title
         switch (getMovieGrid_type()) {
             case GRID_TYPE_POPULAR:
@@ -190,6 +168,22 @@ public class MovieGridFragment extends Fragment implements AbsListView.OnScrollL
             default:
                 getActivity().setTitle(GRID_TYPES[0]);
         }
+    }
+
+    // create view and set up its listeners and load data from Database
+    private void initializeMoviesGrid() {
+        mMovieGridAdapter = new MovieGridAdapter(mContext, null, 0);
+        mMoviesGridView.setAdapter(mMovieGridAdapter);
+        mMoviesGridView.setOnItemClickListener(this);
+        mMoviesGridView.setOnScrollListener(this);
+    }
+
+    private void OnRefresh() {
+        Log.i(LOG_TAG, "Refreshing............");
+        if(isRefreshing) {
+            return;
+        }
+        isRefreshing = true;
 
         // Signal SwipeRefreshLayout to start the progress indicator
         mSwipeRefreshLayout.setRefreshing(true);
@@ -212,11 +206,10 @@ public class MovieGridFragment extends Fragment implements AbsListView.OnScrollL
 
                     // insert into the database
                     insertIntoDb(movieGrid_type, moviesCv);
-                    // clear and add the new movies to the adapter
+                     //clear and add the new movies to the adapter
                     Runnable addToAdapterRunnable = new Runnable() {
                         public void run() {
                             mMovieGridAdapter.changeCursor(null);
-                            mMoviesGridView.setAdapter(mMovieGridAdapter);
                             addMoviesToAdapter(moviesCv);
                             synchronized (this) {
                                 this.notify();
@@ -233,10 +226,8 @@ public class MovieGridFragment extends Fragment implements AbsListView.OnScrollL
                             Log.e(LOG_TAG, "Interrupted while waiting for runOnUiThread to complete.");
                         }
                     }
-                    isOnline = true;
                     onRefreshComplete(moviesCv.length);
                 } catch (MovieDbApiHelper.UnableToFetchDataException e) {
-                    isOnline = false;
                     Log.e(LOG_TAG, "Unable to fetch data.");
                     // if we are not online load data from the database
                     Snackbar.make(mRootView.findViewById(R.id.imagesGridView),
@@ -248,7 +239,7 @@ public class MovieGridFragment extends Fragment implements AbsListView.OnScrollL
         }).start();
     }
 
-    void onRefreshComplete(final int movieCount) {
+    private void onRefreshComplete(final int movieCount) {
         MovieGridFragment.this.getActivity().runOnUiThread(new Runnable() {
             public void run() {
                 if (movieCount <= 0) {
@@ -262,13 +253,14 @@ public class MovieGridFragment extends Fragment implements AbsListView.OnScrollL
         });
         isRefreshing = false;
         isAdditionInProgress = false;
-
+        // make the first item as chosen by default
+        mMoviesGridView.setItemChecked(0, true);
         // callback to the activity
         ((FragmentCallback) getActivity()).onRefreshCompleted(mMovieGridAdapter);
         Log.i(LOG_TAG, "Refresh Completed");
     }
 
-    int loadDataFromDatabase() {
+    private int loadDataFromDatabase() {
         Log.i(LOG_TAG, "Start Loading data from database.");
         final Cursor moviesCursor;
         switch (getMovieGrid_type()) {
@@ -278,6 +270,9 @@ public class MovieGridFragment extends Fragment implements AbsListView.OnScrollL
                                 new String[]{MovieContract.PopularMovieEntry.TABLE_NAME +"." +"_id",
                                         MovieContract.PopularMovieEntry.TABLE_NAME +"." +
                                         MovieContract.PopularMovieEntry.COLUMN_MOVIE_ID,
+                                        MovieContract.MovieDetailsEntry.COLUMN_TITLE,
+                                        MovieContract.MovieDetailsEntry.COLUMN_RELEASE_DATE,
+                                        MovieContract.MovieDetailsEntry.COLUMN_VOTE_AVERAGE,
                                         MovieContract.MovieDetailsEntry.COLUMN_POSTER_URL},
                                 null, null, null);
                 break;
@@ -287,6 +282,9 @@ public class MovieGridFragment extends Fragment implements AbsListView.OnScrollL
                                 new String[]{MovieContract.RatingMovieEntry.TABLE_NAME +"." +"_id",
                                         MovieContract.RatingMovieEntry.TABLE_NAME +"." +
                                         MovieContract.RatingMovieEntry.COLUMN_MOVIE_ID,
+                                        MovieContract.MovieDetailsEntry.COLUMN_TITLE,
+                                        MovieContract.MovieDetailsEntry.COLUMN_RELEASE_DATE,
+                                        MovieContract.MovieDetailsEntry.COLUMN_VOTE_AVERAGE,
                                         MovieContract.MovieDetailsEntry.COLUMN_POSTER_URL},
                                 null, null, null);
                 break;
@@ -296,10 +294,12 @@ public class MovieGridFragment extends Fragment implements AbsListView.OnScrollL
                                 new String[]{MovieContract.FavoriteMovieEntry.TABLE_NAME +"." +"_id",
                                         MovieContract.FavoriteMovieEntry.TABLE_NAME +"." +
                                         MovieContract.FavoriteMovieEntry.COLUMN_MOVIE_ID,
+                                        MovieContract.MovieDetailsEntry.COLUMN_TITLE,
+                                        MovieContract.MovieDetailsEntry.COLUMN_RELEASE_DATE,
+                                        MovieContract.MovieDetailsEntry.COLUMN_VOTE_AVERAGE,
                                         MovieContract.MovieDetailsEntry.COLUMN_POSTER_URL},
                                 null, null, null);
                 break;
-
             default:
                 Log.e(LOG_TAG, "Invalid type in loadDataFromDatabase()");
                 return 0;
@@ -310,13 +310,13 @@ public class MovieGridFragment extends Fragment implements AbsListView.OnScrollL
         if (Looper.getMainLooper().getThread() == Thread.currentThread()) {
             // On UI thread.
             mMovieGridAdapter.changeCursor(moviesCursor);
-            Log.i(LOG_TAG, "Cursor from database added to adapter");
+            Log.i(LOG_TAG, "Cursor from database added to adapter called from UI thread");
         } else {
             // Not on UI thread.
             Runnable addToAdapterRunnable = new Runnable() {
                 public void run() {
                     mMovieGridAdapter.changeCursor(moviesCursor);
-                    Log.i(LOG_TAG, "Cursor from database added to adapter");
+                    Log.i(LOG_TAG, "Cursor from database added to adapter called from no UI thread");
                     synchronized (this) {
                         this.notify();
                     }
@@ -333,11 +333,12 @@ public class MovieGridFragment extends Fragment implements AbsListView.OnScrollL
                 }
             }
         }
-        Log.i(LOG_TAG, "Number of Movies in Adaptor: " +mMovieGridAdapter.getCursor().getCount());
+        Log.i(LOG_TAG, "Number of Movies in Adaptor: "
+                +((mMovieGridAdapter.getCursor() == null)?0:mMovieGridAdapter.getCursor().getCount()));
         return (moviesCursor == null)?0:moviesCursor.getCount();
     }
 
-    public boolean isMoreItemsNeeded(int lastVisibleItem) {
+    private boolean isMoreItemsNeeded(int lastVisibleItem) {
         return mMovieGridAdapter.getCount() - lastVisibleItem < MOVIE_GRID_THRESHOLD;
     }
 
@@ -413,6 +414,7 @@ public class MovieGridFragment extends Fragment implements AbsListView.OnScrollL
                                     default:
                                         Log.wtf(LOG_TAG, "An impossible grid type has been selected.");
                                 }
+                                updateActivityTitle();
                                 OnRefresh();
                             }
                         });
@@ -428,49 +430,53 @@ public class MovieGridFragment extends Fragment implements AbsListView.OnScrollL
     }
 
 
-    ContentValues[] fetchMovies(int startId) throws MovieDbApiHelper.UnableToFetchDataException {
+    private ContentValues[] fetchMovies(int startId) throws MovieDbApiHelper.UnableToFetchDataException {
         ContentValues[] moviesCV;
         switch (movieGrid_type) {
             case GRID_TYPE_POPULAR:
-                moviesCV = mMovieDbHelper.getMovies(movieGrid_type, Integer.toString(movieGrid_nextPageNum++),
+                moviesCV = mMovieDbHelper.getMovies(movieGrid_type, Integer.toString(movieGrid_nextPageNum),
                         startId, null);
                 break;
             case GRID_TYPE_RATING:
                 Bundle extraParameters = new Bundle();
                 extraParameters.putString("vote_count.gte", "100");
-                moviesCV = mMovieDbHelper.getMovies(movieGrid_type, Integer.toString(movieGrid_nextPageNum++),
+                moviesCV = mMovieDbHelper.getMovies(movieGrid_type, Integer.toString(movieGrid_nextPageNum),
                         startId, extraParameters);
                 break;
             default:
                 throw new MovieDbApiHelper.UnableToFetchDataException("Invalid Type in fetchMovies()");
         }
-        Log.v(LOG_TAG, "Fetched Movies in " + movieGrid_type + " order from page " + (movieGrid_nextPageNum-1));
+        Log.v(LOG_TAG, "Fetched Movies in " + movieGrid_type + " order from page " + (movieGrid_nextPageNum));
+        movieGrid_nextPageNum += 1;
         return moviesCV;
     }
 
-    void clearDataFromDatabase(String dataType){
+    private void clearDataFromDatabase(String dataType){
+        int rowsDeleted;
         switch(dataType){
             case GRID_TYPE_POPULAR:
-                mContext.getContentResolver().delete(MovieContract.PopularMovieEntry.CONTENT_URI, null, null);
+                rowsDeleted = mContext.getContentResolver().delete(MovieContract.PopularMovieEntry.CONTENT_URI, null, null);
                 break;
             case GRID_TYPE_RATING:
-                mContext.getContentResolver().delete(MovieContract.RatingMovieEntry.CONTENT_URI, null, null);
+                rowsDeleted = mContext.getContentResolver().delete(MovieContract.RatingMovieEntry.CONTENT_URI, null, null);
                 break;
             case GRID_TYPE_FAVORITE:
-                mContext.getContentResolver().delete(MovieContract.FavoriteMovieEntry.CONTENT_URI, null, null);
+                rowsDeleted = mContext.getContentResolver().delete(MovieContract.FavoriteMovieEntry.CONTENT_URI, null, null);
                 break;
             default:
                 Log.e(LOG_TAG, "Invalid Type in clearDataFromDatabase()");
+                return;
         }
+        Log.i(LOG_TAG, "Cleared " +rowsDeleted +" rows of type: " +dataType);
     }
 
-    void insertIntoDb(String dataType, ContentValues[] data) {
+    private void insertIntoDb(String dataType, ContentValues[] data) {
 
         new Utility.InsertIntoCpTask().execute(dataType, data, getContext());
 
     }
 
-    void addMoviesToAdapter(ContentValues[] newData) {
+    private void addMoviesToAdapter(ContentValues[] newData) {
         Log.v(LOG_TAG, "Added page " + (movieGrid_nextPageNum-1) + " of movies to the list.");
         //Log.v(LOG_TAG, "NewCursor Data: " + DatabaseUtils.dumpCursorToString(newCursor));
 
@@ -482,7 +488,7 @@ public class MovieGridFragment extends Fragment implements AbsListView.OnScrollL
             Log.v(LOG_TAG, "Number of Movies in grid: " +mMovieGridAdapter.getCount());
         }
         else{
-            mMovieGridAdapter.changeCursor(newCursor);
+            mMovieGridAdapter.swapCursor(newCursor);
             Log.v(LOG_TAG, "Number of Movies in grid: " +mMovieGridAdapter.getCount());
         }
 
@@ -500,13 +506,13 @@ public class MovieGridFragment extends Fragment implements AbsListView.OnScrollL
 
         int lastVisibleItem = firstVisibleItem + visibleItemCount;
         //add new movies if required
-        if (isOnline && !getMovieGrid_type().equalsIgnoreCase(GRID_TYPE_FAVORITE)
+        if (!getMovieGrid_type().equalsIgnoreCase(GRID_TYPE_FAVORITE)
                  && isMoreItemsNeeded(lastVisibleItem) && !isAdditionInProgress) {
             addMoviesToGrid();
         }
     }
 
-    public void addMoviesToGrid() {
+    private void addMoviesToGrid() {
         Log.i(LOG_TAG, "Adding movies to grid............");
         isAdditionInProgress = true;
         // do this in a new thread
@@ -538,10 +544,8 @@ public class MovieGridFragment extends Fragment implements AbsListView.OnScrollL
                             Log.e(LOG_TAG, "Interrupted while waiting for runOnUiThread to complete.");
                         }
                     }
-                    isOnline = true;
                 } catch (MovieDbApiHelper.UnableToFetchDataException e) {
                     Log.e(LOG_TAG, "Unable to fetch data.");
-                    isOnline = false;
                     Snackbar.make(mRootView.findViewById(R.id.imagesGridView),
                             getString(R.string.no_internet) +" " +getString(R.string.refresh_direction),
                             Snackbar.LENGTH_LONG).setAction("Action", null).show();
@@ -565,7 +569,5 @@ public class MovieGridFragment extends Fragment implements AbsListView.OnScrollL
     public void onDestroy() {
         super.onDestroy();
         mMovieGridAdapter.getCursor().close();
-        mContext = null;
-        mMovieDbHelper = null;
     }
 }

@@ -176,11 +176,11 @@ public class MovieDetailsFragment extends Fragment {
 
         if (favCursor == null || favCursor.getCount() ==  0) {
             isFavorite = false;
-            mFavImageView.setImageResource(R.drawable.ic_star_border_black_48dp);
+            mFavImageView.setImageResource(R.drawable.ic_favorite_border_black_48dp);
         }
         else {
             isFavorite = true;
-            mFavImageView.setImageResource(R.drawable.ic_star_black_48dp);
+            mFavImageView.setImageResource(R.drawable.ic_favorite_black_48dp);
         }
 
         if(favCursor != null) {
@@ -204,7 +204,7 @@ public class MovieDetailsFragment extends Fragment {
                         }
                     }.execute();
 
-                    mFavImageView.setImageResource(R.drawable.ic_star_border_black_48dp);
+                    mFavImageView.setImageResource(R.drawable.ic_favorite_border_black_48dp);
                     isFavorite = false;
                     Snackbar.make(mRootView.findViewById(R.id.fav_image_details),
                             "Removed from favorites",
@@ -224,7 +224,7 @@ public class MovieDetailsFragment extends Fragment {
                             return null;
                         }
                     }.execute();
-                    mFavImageView.setImageResource(R.drawable.ic_star_black_48dp);
+                    mFavImageView.setImageResource(R.drawable.ic_favorite_black_48dp);
                     isFavorite = true;
                     Snackbar.make(mRootView.findViewById(R.id.fav_image_details),
                             "Added to favorites",
