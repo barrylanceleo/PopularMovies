@@ -213,6 +213,8 @@ public class MovieGridFragment extends Fragment implements AbsListView.OnScrollL
                     Runnable addToAdapterRunnable = new Runnable() {
                         public void run() {
                             mMovieGridAdapter.changeCursor(null);
+                            // this is to move the grid to the top on change of adapter
+                            mMoviesGridView.setAdapter(mMovieGridAdapter);
                             addMoviesToAdapter(moviesCv);
                             synchronized (this) {
                                 this.notify();
