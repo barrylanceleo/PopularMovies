@@ -65,8 +65,8 @@ public class MovieGridAdapter extends CursorAdapter {
         @Override
         public void onError() {
             if (mMovieName != null) {
-                mMovieName.setVisibility(View.GONE);
-                mPoster.setScaleType(ImageView.ScaleType.FIT_START);
+                //mMovieName.setVisibility(View.GONE);
+                mPoster.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
                 mPoster.setImageResource(R.drawable.ic_error_outline_black_36dp);
             }
         }

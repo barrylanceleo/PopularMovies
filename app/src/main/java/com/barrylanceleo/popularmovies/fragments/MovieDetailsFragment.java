@@ -153,12 +153,19 @@ public class MovieDetailsFragment extends Fragment {
                 .into(mBackdropImageView, new Callback() {
                     @Override
                     public void onSuccess() {
-                        mBackDropProgressBar.setVisibility(View.GONE);
+                        if (mBackDropProgressBar != null) {
+                            mBackDropProgressBar.setVisibility(View.GONE);
+                            mBackdropImageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                        }
                     }
 
                     @Override
                     public void onError() {
-                        // NO-OP
+                        if (mBackDropProgressBar != null) {
+                            mBackDropProgressBar.setVisibility(View.GONE);
+                            mBackdropImageView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+                            mBackdropImageView.setImageResource(R.drawable.ic_error_outline_black_36dp);
+                        }
                     }
                 });
 
@@ -246,12 +253,19 @@ public class MovieDetailsFragment extends Fragment {
                 .into(mPosterImageView, new Callback() {
                     @Override
                     public void onSuccess() {
-                        mPosterProgressBar.setVisibility(View.GONE);
+                        if (mPosterProgressBar != null) {
+                            mPosterProgressBar.setVisibility(View.GONE);
+                            mPosterImageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                        }
                     }
 
                     @Override
                     public void onError() {
-                        // NO-OP
+                        if (mPosterProgressBar != null) {
+                            mPosterProgressBar.setVisibility(View.GONE);
+                            mPosterImageView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+                            mPosterImageView.setImageResource(R.drawable.ic_error_outline_black_36dp);
+                        }
                     }
                 });
 

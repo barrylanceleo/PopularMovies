@@ -190,8 +190,7 @@
                     android:layout_gravity="center"
                     android:visibility="gone"
                     android:layout_centerHorizontal="true"
-                    android:layout_centerVertical="true"
-                    android:background="@color/colorBackground" />
+                    android:layout_centerVertical="true" />
 
                 <ImageView
                     android:id="@+id/poster_details_image_view"
